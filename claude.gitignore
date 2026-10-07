@@ -1,0 +1,20 @@
+# Copy to ~/.claude/.gitignore. Allowlist: version config, never history or credentials.
+# This repo is LOCAL ONLY — never add a remote.
+*
+
+!.gitignore
+!settings.json
+!CLAUDE.md
+!lessons.md
+!skills/
+!skills/**
+!hooks/
+!hooks/**
+!tests/
+!tests/**
+
+projects/
+sessions/
+history.jsonl
+.credentials.json
+*.bak
