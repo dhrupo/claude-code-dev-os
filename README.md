@@ -2,7 +2,7 @@
 
 A small starter kit for a calmer Claude Code setup: one rulebook, a relay of named steps,
 and three hooks that enforce the parts that matter. Companion to the post
-**"How I set up Claude Code for daily use"**.
+**[How I set up Claude Code: one rulebook, a 12-step relay to use it daily](https://dev.to/dhrupo/how-i-set-up-claude-code-one-rulebook-a-12-step-relay-to-use-it-daily-40gi)**.
 
 ## What's inside
 
