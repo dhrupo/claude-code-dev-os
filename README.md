@@ -64,6 +64,11 @@ The `plan` skill writes the plan's `scope.txt` path into `<repo>/.git/dev-os-sco
 Both hooks read that pointer; with no pointer they stay silent. It lives inside `.git/`,
 so it's never committed. Remove it when the PR is opened.
 
+## Not included
+
+Skill pinning (`skills.lock`, `overlays/`, a sync script) is described in the post (Step 6) but not shipped here.
+Add it once you install skills from GitHub and want updates without losing your edits.
+
 ## Make it yours
 
 - Edit the skill map (section 4) to name the skills **you** have installed. One owner per job.
