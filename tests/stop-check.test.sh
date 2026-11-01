@@ -47,6 +47,7 @@ rm -f "$GITDIR/dev-os-scope.warned"
 printf 'assert(1);\nassert(2);\ntest.skip("x");\n' > "$REPO/tests/ExportTest.php"
 OUT=$(stop); assert_contains "new skip flagged" "$OUT" "TEST WEAKENED"
 assert_contains "guard catch logged for reflect" "$(cat "$DEV_OS_STATE"/learn-*.jsonl 2>/dev/null)" '"guard"'
+assert_contains "guard ledger is private (600)" "$(ls -l "$DEV_OS_STATE"/learn-s1.jsonl | cut -c1-10)" "-rw-------"
 rm -f "$GITDIR/dev-os-scope.warned"
 printf 'assert(1);\nassert(2);\nassert result == 3\n' > "$REPO/tests/ExportTest.php"; git -C "$REPO" add -A; git -C "$REPO" -c user.email=t@t -c user.name=t commit -qm t2
 printf 'assert(1);\nassert(2);\n' > "$REPO/tests/ExportTest.php"
