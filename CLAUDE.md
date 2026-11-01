@@ -23,11 +23,12 @@ Also classify: bug | feature | refactor | question.
 1. Grill — one question at a time, with your recommended answer. STOP and wait.
 2. Plan — `plan` skill: one page + `scope.txt` + what must NOT change. STOP for approval.
 3. Check the plan — `plan-check`: failing tests named, no open questions, every claim checked by a command.
-4. Build — failing test first (seen red), then the smallest fix.
-5. Check the build — `build-check`.
+4. Build — TDD ([`tdd`](https://github.com/mattpocock/skills/tree/HEAD/skills/engineering/tdd), if installed):
+   failing test first (seen red), then the smallest fix (`ponytail`).
+5. Check the build — `build-check` (runs `/code-review` on the slice in Claude Code;
+   other agents: their own review command).
 6. Tidy — delete what isn't needed (`ponytail-review`, if installed).
-7. Deep review — `review-lens` agents in parallel (Skeptic; + Architect at 50+ changed lines; + Minimalist at 200+),
-   then one verifier per finding that starts from "false positive". Sort: act on / consider / dismissed.
+7. Deep review — `pre-merge-review`: lenses sized by the diff, one verifier per finding, one saved report.
 8. Fix findings — back to 4, then 5.
 9. Step back — `step-back`: read the whole diff cold.
 10. PR — ASK before push, ASK again before opening the PR. Never commit on main/master/develop.
@@ -43,7 +44,8 @@ One task per session: a new plan gets a fresh session with a short handoff note.
 | Bug | (your debugging skill) | then the TDD skill for the regression test |
 | Minimal change | ponytail (while building), ponytail-review (tidy) | other "simplify" skills |
 | Find / trace | 2-4 `scout` agents, one angle each | — |
-| Review | `review-lens` agents (§3 step 7) | second opinions only when asked |
+| Review | `pre-merge-review` (§3 step 7) | second opinions only when asked |
+| Someone else's PR | `post-pr-review` | `/code-review` as a first pass only, never `--comment` |
 | Learn | `reflect` (automatic after a mistake or a review) | `meditate` only when asked |
 Add a row whenever two installed skills could both claim a job.
 

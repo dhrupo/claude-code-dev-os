@@ -33,11 +33,12 @@ Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-
 | `hooks/skill-log.sh` | `PreToolUse(Skill)`: logs skill use, for `learn.sh` and `meditate` |
 | `hooks/statusline.sh` | Status line: model + context %; saves the % for `ctx-handoff.sh` |
 | `skills/plan` (+ `template/`), `plan-check`, `build-check`, `step-back` | The relay's gates; the plan template is proposal, tasks, scope.txt, evidence/ |
+| `skills/pre-merge-review`, `post-pr-review` | Deep review of your branch (lenses + a verifier per finding); review of someone else's PR, each finding proven by running it |
 | `skills/reflect` | Turns a mistake into a check, a skill edit or a lesson |
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 114 checks for every hook and the gate (`bash tests/run.sh`) |
+| `tests/` | 135 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -130,13 +131,14 @@ with no pointer they stay silent. It lives inside `.git/`, so it is never commit
 ## Upgrading from v1
 
 Nothing was renamed. Do steps 2-4 above (with `-n` they only add what is missing), then replace the two v1 hooks
-and two v1 skills that changed, since `cp -n` keeps your old copies (the learning loop needs the new hooks; the
-plan skill now copies its template, and plan-check gained check 5):
+and three v1 skills that changed, since `cp -n` keeps your old copies (the learning loop needs the new hooks; the
+plan skill now copies its template, plan-check gained check 5, and build-check runs `/code-review`):
 
 ```bash
 (cd ~/.claude && git add -A && git commit -m "Before v2")   # one commit to undo with git revert
 cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" ~/.claude/hooks/
 cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/; cp "$KIT/skills/plan-check/SKILL.md" ~/.claude/skills/plan-check/
+cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
 ```
 
 Merge the new `settings.example.json` blocks, and diff your `CLAUDE.md` against the new one (sections 1, 3, 4, 5
