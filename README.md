@@ -6,7 +6,7 @@ with stops where you decide, and gates that enforce what matters. The rulebook w
 Claude Code layer; Codex has close equivalents (see [Other agents](#other-agents)).
 
 Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-up-claude-code-one-rulebook-a-12-step-relay-to-use-it-daily-40gi)** ·
-**v2 — gates, a learning loop, agents that check agents** (link added on publish).
+**[v2 — gates, a learning loop, agents that check agents](https://dev.to/dhrupo/dev-os-v2-gates-a-learning-loop-and-agents-that-check-agents-4a9b)**.
 
 ## What's inside
 
