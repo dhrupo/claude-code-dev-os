@@ -23,7 +23,7 @@ Also classify: bug | feature | refactor | question.
 1. Grill — one question at a time, with your recommended answer. STOP and wait.
 2. Plan — `plan` skill: one page + `scope.txt` + what must NOT change. STOP for approval.
 3. Check the plan — `plan-check`: failing tests named, no open questions, every claim checked by a command.
-4. Build — failing test first (seen red), then the smallest fix.
+4. Build — TDD ([`tdd`](https://github.com/mattpocock/skills/tree/HEAD/skills/engineering/tdd), if installed): failing test first (seen red), then the smallest fix (`ponytail`).
 5. Check the build — `build-check`.
 6. Tidy — delete what isn't needed (`ponytail-review`, if installed).
 7. Deep review — `review-lens` agents in parallel (Skeptic; + Architect at 50+ changed lines; + Minimalist at 200+),
