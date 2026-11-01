@@ -7,7 +7,8 @@ description: Review someone else's open PR — find regressions, prove each find
 
 Read-only on code. Never push to the author's branch, never edit their files.
 
-1. **Collect.** `gh pr view <n>`, `gh pr diff <n>`, and every earlier review and comment, so no point is repeated.
+1. **Collect.** `gh pr diff <n>`, `gh pr view <n> --comments`, and inline review comments
+   (`gh api repos/{owner}/{repo}/pulls/<n>/comments`), so no point is repeated.
 2. **Review through these lenses** (`review-lens` agents for a big PR, one lens each):
    - Regression: grep every caller of each changed function, key or event; walk every use case the change touches.
    - Workarounds: what users already did to live with the old behaviour, and what this PR does to them.

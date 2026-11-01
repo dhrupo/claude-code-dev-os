@@ -41,4 +41,10 @@ assert_contains "build-check runs /code-review" "$(cat skills/build-check/SKILL.
 assert_contains "relay step 5 names /code-review" "$(grep '^5\. ' CLAUDE.md)" "/code-review"
 assert_contains "relay step 7 names pre-merge-review" "$(grep '^7\. ' CLAUDE.md)" "pre-merge-review"
 assert_contains "skill map routes others' PRs to post-pr-review" "$(grep '^|' CLAUDE.md)" "post-pr-review"
+assert_contains "build-check has a fallback without /code-review" "$(cat skills/build-check/SKILL.md)" "other agents:"
+assert_contains "relay step 5 has a fallback without /code-review" "$(grep -A1 '^5\. Check the build' CLAUDE.md)" "other agents:"
+assert_not_contains "relay step 7 leaves lens sizes to pre-merge-review" "$(sed -n '/^7\. Deep review/,/^8\. /p' CLAUDE.md)" "200+"
+assert_contains "pre-merge-review defines its security lens" "$(cat skills/pre-merge-review/SKILL.md)" "who can reach"
+assert_contains "post-pr-review row defers /code-review --comment" "$(grep "^| Someone else's PR" CLAUDE.md)" "never \`--comment\`"
+assert_contains "post-pr-review reads inline review comments" "$(cat skills/post-pr-review/SKILL.md)" "pulls/<n>/comments"
 summary

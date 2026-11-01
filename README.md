@@ -38,7 +38,7 @@ Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 129 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 135 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 

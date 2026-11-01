@@ -9,7 +9,8 @@ Run after `build-check` is green. `/code-review` checked each slice; this reads 
 
 1. **Size the diff.** `git diff --stat <base>...HEAD`. Count changed lines, tests excluded.
 2. **Spawn lenses in one message** (`review-lens` agent, read-only): Skeptic always; + Architect at 50+ lines;
-   + Minimalist at 200+. A diff touching auth, payments, data deletion or secrets → also a security lens.
+   + Minimalist at 200+. A diff touching auth, payments, data deletion or secrets → also a security lens: who can reach
+   the changed code, untrusted input reaching a query, shell or page, secrets in logs or the diff.
    Brief each with the plan's `proposal.md`, the base, and "What won't change".
 3. **One verifier per finding** (`review-lens` agent as verifier). It starts from "false positive" and flips only with
    a reproduced failure or a full code path. Unverified findings never reach the report as facts.
