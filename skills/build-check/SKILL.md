@@ -11,6 +11,7 @@ Run the real commands. Never report a result you couldn't see.
 2. **E2E green (browser-visible changes).** The E2E test ran against the running app and passed. Save the output and a screenshot.
 3. **Lint + types.** Linter and type checker pass where the project has them.
 4. **Diff is scoped.** `git diff --name-only` touches only files in `scope.txt`. An unplanned file is stop-and-ask.
-5. **Evidence saved.** Test output and screenshots go to the plan's `evidence/`.
+5. **Slice review.** Run `/code-review` on this slice's diff; fix each real finding or write why it stays.
+6. **Evidence saved.** Test output and screenshots go to the plan's `evidence/`.
 
 One line per check, pass/fail. All green → deep review. Any red → back to build.
