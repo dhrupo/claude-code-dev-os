@@ -1,80 +1,161 @@
 # claude-code-dev-os
 
-A small starter kit for a calmer Claude Code setup: one rulebook, a relay of named steps,
-and three hooks that enforce the parts that matter. Companion to the post
-**[How I set up Claude Code: one rulebook, a 12-step relay to use it daily](https://dev.to/dhrupo/how-i-set-up-claude-code-one-rulebook-a-12-step-relay-to-use-it-daily-40gi)**.
+A starter kit that makes an AI coding agent behave the same way every day: one rulebook, a relay of named steps
+with stops where you decide, and gates that enforce what matters. The rulebook works with any agent that reads
+`AGENTS.md` (Codex, Cursor, Copilot and others) or `CLAUDE.md` (Claude Code). The hooks and skills are a deeper,
+Claude Code layer; Codex has close equivalents (see [Other agents](#other-agents)).
+
+Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-up-claude-code-one-rulebook-a-12-step-relay-to-use-it-daily-40gi)** ·
+**v2 — gates, a learning loop, agents that check agents** (link added on publish).
 
 ## What's inside
 
+**Core: any agent**
+
 | Path | What it does |
 |---|---|
-| `CLAUDE.md` | Rulebook template: precedence, lanes 🟢🟡🔴, 12-step relay, skill map, rules |
-| `lessons.md` | One line per review finding you should have caught (imported by `CLAUDE.md`) |
-| `settings.example.json` | `permissions.ask` for push/PR + the three hooks |
-| `hooks/reminder.sh` | `UserPromptSubmit`: one-paragraph rule reminder on every prompt |
+| `CLAUDE.md` | The rulebook: precedence, lanes 🟢🟡🔴, 12-step relay, skill map, rules, what is enforced |
+| `AGENTS.md` | A link to `CLAUDE.md`, so agents that read `AGENTS.md` get the same rules |
+| `lessons.md` | Patterns review caught that you missed; 60-line budget (imported by `CLAUDE.md`) |
+| `bin/gate-install` | Per-repo git `pre-commit` gate: no commit while the project's tests fail |
+
+**Claude Code layer: optional**
+
+| Path | What it does |
+|---|---|
+| `settings.example.json` | `permissions.ask` for push/PR, every hook below, the status line |
+| `hooks/reminder.sh` | `UserPromptSubmit`: one-paragraph rule reminder; logs prompts that look like a correction |
 | `hooks/scope-guard.sh` | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
-| `hooks/stop-check.sh` | `Stop`: sends Claude back once if files are out of scope or source changed with no test |
-| `skills/plan` | Writes `proposal.md`, `tasks.md`, `scope.txt`, `evidence/` and activates the scope |
-| `skills/plan-check` | Gates the plan: tests named, "won't change" listed, smallest change, no open questions |
-| `skills/build-check` | Gates the code: tests, E2E, lint, diff matches scope, evidence saved |
-| `skills/step-back` | Reads the whole diff cold before the PR |
-| `claude.gitignore` | Allowlist `.gitignore` so `~/.claude` can be a local git repo |
-| `tests/` | Tests for the hooks (`bash tests/run.sh`) |
+| `hooks/stop-check.sh` | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
+| `hooks/learn.sh` | `Stop`: a logged mistake blocks once until the `reflect` skill runs |
+| `hooks/ctx-handoff.sh` | `Stop`: offers a fresh session at ~80% context, or when a second plan starts |
+| `hooks/compact.sh` | `SessionStart(compact)`: restates the active plan and next task after compaction |
+| `hooks/skill-log.sh` | `PreToolUse(Skill)`: logs skill use, for `learn.sh` and `meditate` |
+| `hooks/statusline.sh` | Status line: model + context %; saves the % for `ctx-handoff.sh` |
+| `skills/plan` (+ `template/`), `plan-check`, `build-check`, `step-back` | The relay's gates; the plan template is proposal, tasks, scope.txt, evidence/ |
+| `skills/reflect` | Turns a mistake into a check, a skill edit or a lesson |
+| `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
+| `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
+| `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
+| `tests/` | 100 checks for every hook and the gate (`bash tests/run.sh`) |
 
-Needs: Claude Code, `git`, `python3`, `jq` (tests only).
+Needs: `git`, `bash`, `python3`, `jq`.
 
-## Start here (10 minutes)
+## Start here
 
-**1. Version your current setup first** so every change can be undone:
+Run everything from the kit folder; `KIT` is where you cloned it.
 
-```bash
-cp -n claude.gitignore ~/.claude/.gitignore
-cd ~/.claude && git init && git add -A && git status   # check: no history or credentials staged
-git commit -m "Baseline"
-```
-
-**2. Add the rulebook.** Already have a `~/.claude/CLAUDE.md`? Merge by hand; keep section 0 (Precedence) at the top.
-
-```bash
-cp -n CLAUDE.md lessons.md ~/.claude/
-```
-
-**3. Add the hooks and skills** (`-n` never overwrites your files):
+**1. Version your setup first** so every change can be undone:
 
 ```bash
-mkdir -p ~/.claude/hooks ~/.claude/skills
-cp -n hooks/*.sh ~/.claude/hooks/ && chmod +x ~/.claude/hooks/*.sh
-cp -Rn skills/* ~/.claude/skills/
+KIT=$(pwd)
+cp -n "$KIT/claude.gitignore" ~/.claude/.gitignore
+(cd ~/.claude && git init && git add -A && git status)   # check: no history or credentials staged
+(cd ~/.claude && git commit -m "Baseline")
 ```
 
-**4. Wire them up.** Merge `settings.example.json` into `~/.claude/settings.json` by hand
-(`permissions.ask` and `hooks`). If `~` doesn't expand for you, use absolute paths.
+**2. Add the rulebook** (already have one? merge by hand; keep section 0, Precedence, at the top):
+
+```bash
+cp -n "$KIT/CLAUDE.md" "$KIT/lessons.md" ~/.claude/
+mkdir -p ~/.claude/bin; cp -n "$KIT/bin/gate-install" ~/.claude/bin/
+```
+
+**3. Turn on the test gate in a project** (one line: the command that runs that project's tests):
+
+```bash
+cd ~/code/my-app
+echo 'npm test' > .dev-os-test
+~/.claude/bin/gate-install
+git commit -am "try it"       # refused while npm test fails
+cd "$KIT"
+```
+
+The hook runs the command with `pipefail` and reads its own exit code, so `npm test | tail` cannot hide a failure.
+An empty or missing `.dev-os-test` refuses the commit instead of passing silently. Git's own index variables are
+cleared first, so a test suite that runs `git` itself works. It never overwrites a `pre-commit` hook it did not write
+(husky, pre-commit), and it refuses a global `core.hooksPath`: add the one line it prints to that hook instead.
+`.dev-os-test` is code from the repo that runs on every commit, like `npm test`: in a shared repo, read it after a
+pull that changes it.
+
+**4. Claude Code layer** (`-n` never overwrites your files; on macOS it exits 1 when it skips one, hence `;`):
+
+```bash
+mkdir -p ~/.claude/hooks ~/.claude/skills ~/.claude/agents
+cp -n "$KIT"/hooks/*.sh ~/.claude/hooks/; chmod +x ~/.claude/hooks/*.sh
+cp -Rn "$KIT"/skills/* ~/.claude/skills/; cp -n "$KIT"/agents/*.md ~/.claude/agents/
+```
+
+Merge `settings.example.json` into `~/.claude/settings.json` by hand (`permissions`, `hooks`, `statusLine`).
+Already have a status line? Keep it, and add the line that saves the context % for `ctx-handoff.sh`:
+`[ -n "$USED" ] && mkdir -p ~/.claude/state && echo "${USED%.*}" > ~/.claude/state/ctx-$SID.txt`
+(`USED` = `.context_window.used_percentage`, `SID` = `.session_id` from the status line's JSON input).
 
 **5. Check it works:**
 
 ```bash
-bash tests/run.sh          # all green
+bash "$KIT/tests/run.sh"          # all green
 ```
 
-Then start a new Claude Code session and ask for anything: the first line of the reply should be a lane (🟢/🟡/🔴).
+Start a new session and ask for anything: the first line of the reply is a lane (🟢/🟡/🔴).
 
-## How the scope hooks know the plan
+## Other agents
 
-The `plan` skill writes the plan's `scope.txt` path into `<repo>/.git/dev-os-scope`.
-Both hooks read that pointer; with no pointer they stay silent. It lives inside `.git/`,
-so it's never committed. Remove it when the PR is opened.
+Checked against official docs on 2026-11-01; tools move fast, so re-check before relying on a detail.
 
-## Not included
+- **Codex CLI** reads `~/.codex/AGENTS.md`, then one `AGENTS.md` per folder from the repo root down (closer files win;
+  32 KiB total by default). Use the same rulebook: `ln -s ~/.claude/CLAUDE.md ~/.codex/AGENTS.md`.
+  Skills live in `~/.agents/skills` (symlinked folders work); Codex hooks use the same event names and the
+  same `Stop` → `{"decision":"block"}` shape, configured in `~/.codex/hooks.json`. To make `git push` ask first, use a
+  `prefix_rule` with `decision = "prompt"` in `~/.codex/rules/` (marked experimental).
+- **Claude Code** reads `AGENTS.md` only in a repo with no `CLAUDE.md`; this kit keeps `CLAUDE.md` as the source.
+- `@lessons.md` imports are a Claude Code feature: through the `AGENTS.md` link, Codex reads the rulebook but not
+  `lessons.md`. Paste short lessons into the rulebook if you rely on Codex.
+- **Cursor, GitHub Copilot and others** read `AGENTS.md` ([agents.md](https://agents.md)); hooks exist but use their
+  own config.
+- **The test gate is plain git**, so it works the same whatever agent (or person) commits.
 
-Skill pinning (`skills.lock`, `overlays/`, a sync script) is described in the post (Step 6) but not shipped here.
-Add it once you install skills from GitHub and want updates without losing your edits.
+## Project memory: graph first
+
+Rule 8 tells the agent to ask a code graph "who calls this?" before grepping. Two options, both usable from any agent:
+[graphify](https://github.com/Graphify-Labs/graphify) (CLI, `uv tool install graphifyy`) and
+[code-review-graph](https://github.com/tirth8205/code-review-graph) (MCP server). Build the graph once per project and
+refresh it after big merges. What was *learned* lives in `lessons.md` and the plan folders, not in the graph.
+
+## How the hooks know the plan
+
+The `plan` skill writes the plan's `scope.txt` path into `<repo>/.git/dev-os-scope`. The hooks read that pointer;
+with no pointer they stay silent. It lives inside `.git/`, so it is never committed. Remove it when the PR is opened.
+
+## Upgrading from v1
+
+Nothing was renamed. Do steps 2-4 above (with `-n` they only add what is missing), then replace the two v1 hooks
+and two v1 skills that changed, since `cp -n` keeps your old copies (the learning loop needs the new hooks; the
+plan skill now copies its template, and plan-check gained check 5):
+
+```bash
+(cd ~/.claude && git add -A && git commit -m "Before v2")   # one commit to undo with git revert
+cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" ~/.claude/hooks/
+cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/; cp "$KIT/skills/plan-check/SKILL.md" ~/.claude/skills/plan-check/
+```
+
+Merge the new `settings.example.json` blocks, and diff your `CLAUDE.md` against the new one (sections 1, 3, 4, 5
+and 6 grew).
+
+## Known gaps
+
+- `permissions.ask` matches the command prefix: `Bash(git push:*)` does not catch `git -C . push`. The test gate and
+  branch protection on the remote are the backstops.
+- Skill pinning (`skills.lock`, overlays, a sync script) is described in the v1 post but not shipped here.
 
 ## Make it yours
 
 - Edit the skill map (section 4) to name the skills **you** have installed. One owner per job.
-- Add project facts to section 7, or keep them in each repo's own `CLAUDE.md`.
-- Every time review catches something you should have, add one line to `lessons.md`.
-- Add a hook only for a rule you can't afford to have skipped, and add a test for it.
+- Rule 3 is the ladder from [ponytail](https://github.com/DietrichGebert/ponytail) (MIT); install its skills for the
+  full version (`ponytail` while building, `ponytail-review` at the tidy step).
+- Add project facts to section 7, or keep them in each repo's own `CLAUDE.md` / `AGENTS.md`.
+- When review catches something, run `reflect`: a test or hook beats a new line in `lessons.md`.
+- Add a hook only for a rule you can't afford to have skipped, and give it a test.
 
 ## License
 

@@ -1,0 +1,3 @@
+# files this change may touch, one per line; globs allowed
+src/example.js
+tests/*

@@ -6,6 +6,10 @@
 !settings.json
 !CLAUDE.md
 !lessons.md
+!agents/
+!agents/**
+!bin/
+!bin/**
 !skills/
 !skills/**
 !hooks/

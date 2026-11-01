@@ -1,0 +1,38 @@
+#!/bin/bash
+# Install a pre-commit test gate in the current git repo. The test command lives in .dev-os-test (one line).
+TOP=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "gate-install: not inside a git repo" >&2; exit 1; }
+if ! grep -q '[^[:space:]]' "$TOP/.dev-os-test" 2>/dev/null; then
+  echo "gate-install: add your test command first, e.g.  echo 'npm test' > .dev-os-test" >&2
+  exit 1
+fi
+HOOKS=$(git -C "$TOP" rev-parse --path-format=absolute --git-path hooks)
+COMMON=$(git -C "$TOP" rev-parse --path-format=absolute --git-common-dir)
+HOOK="$HOOKS/pre-commit"
+case "$HOOKS/" in
+  "$COMMON"/*) ;;
+  *) echo "gate-install: core.hooksPath points outside this repo ($(dirname "$HOOK")); add the gate there yourself or unset it" >&2; exit 1 ;;
+esac
+if [ -e "$HOOK" ] && ! grep -q 'dev-os test gate' "$HOOK"; then
+  echo "gate-install: $HOOK already exists and is not ours; add 'bash -o pipefail -c \"\$(cat .dev-os-test)\"' to it yourself" >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$HOOK")"
+cat > "$HOOK" <<'HOOKEOF'
+#!/bin/bash
+# dev-os test gate: refuse the commit while the project's tests fail.
+TOP=$(git rev-parse --show-toplevel)
+unset GIT_INDEX_FILE GIT_DIR GIT_WORK_TREE GIT_PREFIX
+CMD=$(cat "$TOP/.dev-os-test" 2>/dev/null)
+if ! printf '%s' "$CMD" | grep -q '[^[:space:]]'; then
+  echo "dev-os test gate: .dev-os-test is missing or empty; commit refused (put your test command in it)." >&2
+  exit 1
+fi
+(cd "$TOP" && bash -o pipefail -c "$CMD")
+RC=$?
+if [ "$RC" -ne 0 ]; then
+  echo "dev-os test gate: '$CMD' exited $RC; commit refused. Fix the tests (or say why, and commit with --no-verify yourself)." >&2
+  exit 1
+fi
+HOOKEOF
+chmod +x "$HOOK"
+echo "gate-install: test gate installed at $HOOK (runs: $(head -1 "$TOP/.dev-os-test"))"
