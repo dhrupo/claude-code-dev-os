@@ -9,11 +9,8 @@ description: Use after grilling, when a 🔴 change needs a written plan, before
 `~/Documents/plans/<project>/<id>/` — `<id>` is a short kebab slug (`add-csv-export`). Never inside the code repo.
 
 ## Files
-1. `proposal.md` — one page, plain words, exactly these headings:
-   - **What's wrong / what we're adding**
-   - **What we'll change** (`file:line` — what and why)
-   - **What won't change** (behaviour at risk and how we keep it safe)
-   - **How we'll know it works** (the failing tests to write first)
+Copy `~/.claude/skills/plan/template/` into the plan folder, then fill it in:
+1. `proposal.md` — one page, plain words, keep its four headings.
 2. `tasks.md` — checkboxes, one commit-sized slice each, failing test named first.
 3. `scope.txt` — every repo-relative file or glob this change may touch, tests included, one per line.
 4. `evidence/` — empty; later steps save test runs and screenshots here.
