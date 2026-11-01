@@ -20,5 +20,8 @@ fi
 assert_contains "private pattern list is never committed" "$(cat .gitignore 2>/dev/null)" "tests/.private-patterns"
 assert_contains "plan skill ships its template" "$(test -s skills/plan/template/proposal.md && echo yes)" "yes"
 assert_contains "plan skill copies its template" "$(cat skills/plan/SKILL.md)" "template/"
+assert_contains "upgrade replaces the v1 plan skill" "$(cat README.md)" 'cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/'
+assert_contains "upgrade replaces the v1 plan-check skill" "$(cat README.md)" 'cp "$KIT/skills/plan-check/SKILL.md" ~/.claude/skills/plan-check/'
+assert_contains "README warns that .dev-os-test runs on commit" "$(cat README.md)" "runs on every commit"
 assert_contains "plan-check checks claims by command" "$(cat skills/plan-check/SKILL.md)" "command"
 summary

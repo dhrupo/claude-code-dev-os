@@ -5,11 +5,11 @@ if ! grep -q '[^[:space:]]' "$TOP/.dev-os-test" 2>/dev/null; then
   echo "gate-install: add your test command first, e.g.  echo 'npm test' > .dev-os-test" >&2
   exit 1
 fi
-HOOK="$(git -C "$TOP" rev-parse --git-path hooks)/pre-commit"
-case "$HOOK" in /*) ;; *) HOOK="$TOP/$HOOK" ;; esac
-COMMON=$(cd "$TOP" && cd "$(git rev-parse --git-common-dir)" && pwd -P)
-case "$(cd "$(dirname "$HOOK")" 2>/dev/null && pwd -P)" in
-  "$COMMON"/*|"") ;;
+HOOKS=$(git -C "$TOP" rev-parse --path-format=absolute --git-path hooks)
+COMMON=$(git -C "$TOP" rev-parse --path-format=absolute --git-common-dir)
+HOOK="$HOOKS/pre-commit"
+case "$HOOKS/" in
+  "$COMMON"/*) ;;
   *) echo "gate-install: core.hooksPath points outside this repo ($(dirname "$HOOK")); add the gate there yourself or unset it" >&2; exit 1 ;;
 esac
 if [ -e "$HOOK" ] && ! grep -q 'dev-os test gate' "$HOOK"; then

@@ -1,5 +1,6 @@
 #!/bin/bash
 # Status line: model + context %; saves the percent so ctx-handoff.sh can offer a fresh session.
+umask 077
 INPUT=$(cat)
 STATE="${DEV_OS_STATE:-$HOME/.claude/state}"
 MODEL=$(printf '%s' "$INPUT" | jq -r '.model.display_name // "?"')

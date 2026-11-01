@@ -1,5 +1,6 @@
 #!/bin/bash
 # Stop: offer a fresh session once at 80%+ context, and once when a second plan starts in the same session.
+umask 077
 INPUT=$(cat)
 [ "$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ] && exit 0
 SID=$(printf '%s' "$INPUT" | jq -r '.session_id // empty')

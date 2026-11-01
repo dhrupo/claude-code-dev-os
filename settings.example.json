@@ -19,6 +19,9 @@
     "PreToolUse": [
       { "matcher": "Skill", "hooks": [{ "type": "command", "command": "~/.claude/hooks/skill-log.sh", "timeout": 5 }] }
     ],
+    "UserPromptExpansion": [
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/skill-log.sh", "timeout": 5 }] }
+    ],
     "SessionStart": [
       { "matcher": "compact", "hooks": [{ "type": "command", "command": "~/.claude/hooks/compact.sh", "timeout": 5 }] }
     ]

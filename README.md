@@ -75,8 +75,10 @@ The hook runs the command with `pipefail` and reads its own exit code, so `npm t
 An empty or missing `.dev-os-test` refuses the commit instead of passing silently. Git's own index variables are
 cleared first, so a test suite that runs `git` itself works. It never overwrites a `pre-commit` hook it did not write
 (husky, pre-commit), and it refuses a global `core.hooksPath`: add the one line it prints to that hook instead.
+`.dev-os-test` is code from the repo that runs on every commit, like `npm test`: in a shared repo, read it after a
+pull that changes it.
 
-**4. Claude Code layer** (`-n` never overwrites your files; it exits 1 when it skips one, hence `;`):
+**4. Claude Code layer** (`-n` never overwrites your files; on macOS it exits 1 when it skips one, hence `;`):
 
 ```bash
 mkdir -p ~/.claude/hooks ~/.claude/skills ~/.claude/agents
@@ -107,6 +109,8 @@ Checked against official docs on 2026-11-01; tools move fast, so re-check before
   same `Stop` → `{"decision":"block"}` shape, configured in `~/.codex/hooks.json`. To make `git push` ask first, use a
   `prefix_rule` with `decision = "prompt"` in `~/.codex/rules/` (marked experimental).
 - **Claude Code** reads `AGENTS.md` only in a repo with no `CLAUDE.md`; this kit keeps `CLAUDE.md` as the source.
+- `@lessons.md` imports are a Claude Code feature: through the `AGENTS.md` link, Codex reads the rulebook but not
+  `lessons.md`. Paste short lessons into the rulebook if you rely on Codex.
 - **Cursor, GitHub Copilot and others** read `AGENTS.md` ([agents.md](https://agents.md)); hooks exist but use their
   own config.
 - **The test gate is plain git**, so it works the same whatever agent (or person) commits.
@@ -126,11 +130,13 @@ with no pointer they stay silent. It lives inside `.git/`, so it is never commit
 ## Upgrading from v1
 
 Nothing was renamed. Do steps 2-4 above (with `-n` they only add what is missing), then replace the two v1 hooks
-that changed, since `cp -n` keeps your old copies and the learning loop needs the new ones:
+and two v1 skills that changed, since `cp -n` keeps your old copies (the learning loop needs the new hooks; the
+plan skill now copies its template, and plan-check gained check 5):
 
 ```bash
 (cd ~/.claude && git add -A && git commit -m "Before v2")   # one commit to undo with git revert
 cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" ~/.claude/hooks/
+cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/; cp "$KIT/skills/plan-check/SKILL.md" ~/.claude/skills/plan-check/
 ```
 
 Merge the new `settings.example.json` blocks, and diff your `CLAUDE.md` against the new one (sections 1, 3, 4, 5

@@ -80,6 +80,7 @@ parts.append("This fires once per new set of problems.")
 sid = ev.get("session_id")
 if sid:
     state = os.environ.get("DEV_OS_STATE") or os.path.expanduser("~/.claude/state")
+    os.umask(0o077)
     os.makedirs(state, exist_ok=True)
     with open(os.path.join(state, "learn-" + sid + ".jsonl"), "a") as f:
         f.write(json.dumps({"time": int(time.time() * 1000), "type": "guard", "note": ", ".join(problems)[:200]}) + "\n")

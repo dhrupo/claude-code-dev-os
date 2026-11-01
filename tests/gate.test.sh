@@ -61,6 +61,13 @@ assert_contains "refuses a hooks folder outside this repo" "[rc=$RC]" "[rc=1]"
 assert_contains "nothing written to the global hooks folder" "files=$(ls "$HP" | wc -l | tr -d ' ')" "files=0"
 assert_contains "says why" "$OUT" "core.hooksPath"
 
+echo "# a global core.hooksPath that does not exist yet is refused too"
+HP2="$WORK/not-yet-hooks"; printf '[core]\n\thooksPath = %s\n' "$HP2" > "$WORK/gcfg2"
+REPO6="$WORK/repo6"; mkdir -p "$REPO6"; git -C "$REPO6" init -q; echo true > "$REPO6/.dev-os-test"
+(cd "$REPO6" && GIT_CONFIG_GLOBAL="$WORK/gcfg2" "$GATE" >/dev/null 2>&1); RC=$?
+assert_contains "missing global hooks folder: install refused" "[rc=$RC]" "[rc=1]"
+assert_contains "missing global hooks folder: not created" "made=$(test -e "$HP2" && echo yes || echo no)" "made=no"
+
 echo "# never overwrites a hook it did not write"
 REPO2="$WORK/repo2"; mkdir -p "$REPO2/.git/hooks"; git -C "$REPO2" init -q
 printf '#!/bin/sh\necho husky\n' > "$REPO2/.git/hooks/pre-commit"; echo 'true' > "$REPO2/.dev-os-test"

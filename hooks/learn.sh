@@ -9,6 +9,7 @@ except Exception:
 sid = ev.get("session_id")
 if not sid:
     sys.exit(0)
+os.umask(0o077)
 state = os.environ.get("DEV_OS_STATE") or os.path.expanduser("~/.claude/state")
 
 def rows(name):
