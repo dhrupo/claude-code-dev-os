@@ -9,11 +9,11 @@ assert_contains "plugin is named dev-os" "$(jq -r .name "$P" 2>&1)" "dev-os"
 assert_contains "marketplace lists dev-os from this repo" "$(jq -r '.plugins[] | select(.name=="dev-os") | .source' "$M" 2>&1)" "./"
 assert_contains "marketplace has an owner" "$(jq -r '.owner.name // empty' "$M" 2>/dev/null)" "Dhrupo"
 PV=$(jq -r .version "$P" 2>/dev/null); MV=$(jq -r '.plugins[] | select(.name=="dev-os") | .version' "$M" 2>/dev/null)
-assert_contains "plugin has a version (got $PV)" "[$PV]" "[2.1.0]"
-assert_contains "marketplace version agrees (got $MV)" "[$MV]" "[$PV]"
+assert_contains "plugin has a semver version (got $PV)" "$(printf '%s' "$PV" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" "$PV"
+assert_contains "plugin.json alone owns the version (marketplace has none)" "[$MV]" "[null]"
 
 echo "# plugin wiring matches the copy-install wiring"
-wiring() { jq -r '.hooks | to_entries[] | .key as $e | .value[] | (.matcher // "*") as $m | .hooks[] | "\($e) \($m) \(.command | sub(".*/hooks/"; "") | sub("\"$"; ""))"' "$1" 2>/dev/null | sort; }
+wiring() { jq -r '.hooks | to_entries[] | .key as $e | .value[] | (.matcher // "*") as $m | .hooks[] | "\($e) \($m) \(.command | sub(".*/hooks/"; "") | sub("\"$"; "")) \(.timeout)"' "$1" 2>/dev/null | sort; }
 A=$(wiring settings.example.json); B=$(wiring hooks/hooks.json)
 assert_contains "copy wiring covers 6 events (got $(printf '%s\n' "$A" | awk '{print $1}' | sort -u | wc -l | tr -d ' '))" "$(printf '%s\n' "$A" | awk '{print $1}' | sort -u | wc -l | tr -d ' ')" "6"
 assert_contains "plugin wiring covers 6 events" "$(printf '%s\n' "$B" | awk '{print $1}' | sort -u | wc -l | tr -d ' ')" "6"
@@ -32,7 +32,8 @@ done
 echo "# duplicate guard: plugin hook steps aside only when the same hook is wired by hand"
 W=$(mktemp -d); trap 'rm -rf "$W"' EXIT
 export DEV_OS_STATE="$W/state"
-printf '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"~/.claude/hooks/reminder.sh"}]}]}}' > "$W/wired.json"
+mkdir -p "$W/home/.claude/hooks"; cp hooks/reminder.sh hooks/dedupe.sh "$W/home/.claude/hooks/"
+printf '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"%s/home/.claude/hooks/reminder.sh"}]}]}}' "$W" > "$W/wired.json"
 printf '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"~/.claude/hooks/other-reminder.sh"}]}]}}' > "$W/other.json"
 prompt() { jq -nc '{prompt:"fix the export bug",cwd:"/x",session_id:"s1"}'; }
 assert_contains "copy install (no plugin env) still speaks" "$(prompt | env -u CLAUDE_PLUGIN_ROOT DEV_OS_USER_SETTINGS="$W/wired.json" hooks/reminder.sh)" "<rules>"
@@ -41,7 +42,7 @@ assert_contains "plugin hook silent when wired by hand" "[$(prompt | CLAUDE_PLUG
 assert_contains "a different hook name does not silence it" "$(prompt | CLAUDE_PLUGIN_ROOT="$PWD" DEV_OS_USER_SETTINGS="$W/other.json" hooks/reminder.sh)" "<rules>"
 
 echo "# setup-check: push ask missing → said once; added → silent and re-armed"
-printf '{"permissions":{"ask":["Bash(git push:*)"]}}' > "$W/ask.json"
+printf '{"permissions":{"ask":["Bash(git push:*)","Bash(git -C * push *)","Bash(gh pr create:*)"]}}' > "$W/ask.json"
 sc() { DEV_OS_USER_SETTINGS="$1" hooks/setup-check.sh </dev/null 2>&1; }
 assert_contains "missing ask → one message" "$(sc "$W/none.json")" "README"
 assert_contains "second session silent" "[$(sc "$W/none.json")]" "[]"
@@ -66,4 +67,18 @@ assert_contains "README: plugin install command" "$R" "/plugin marketplace add d
 assert_contains "README: install line" "$R" "/plugin install dev-os@dhrupo"
 assert_contains "README: after-install push ask covers git -C" "$R" 'Bash(git -C * push *)'
 assert_contains "README: pick one install" "$R" "Pick one install"
+
+echo "# review round 1"
+mkdir -p "$W/other/hooks"; printf '#!/bin/bash\necho other\n' > "$W/other/hooks/reminder.sh"
+printf '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"python3 %s/other/hooks/reminder.sh"}]}]}}' "$W" > "$W/sameName.json"
+printf '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"\\"%s/home/.claude/hooks/reminder.sh\\" 2>/dev/null"}]}]}}' "$W" > "$W/quoted.json"
+assert_contains "another tool's hook with the same name does not silence the kit's" "$(prompt | CLAUDE_PLUGIN_ROOT="$PWD" DEV_OS_USER_SETTINGS="$W/sameName.json" hooks/reminder.sh)" "<rules>"
+assert_contains "a quoted hand-wired kit copy still counts" "[$(prompt | CLAUDE_PLUGIN_ROOT="$PWD" DEV_OS_USER_SETTINGS="$W/quoted.json" hooks/reminder.sh)]" "[]"
+printf '{"permissions":{"ask":["Bash(git push:*)"]}}' > "$W/onlypush.json"; rm -f "$DEV_OS_STATE/setup-check.warned"
+assert_contains "setup-check wants all three ask rules" "$(DEV_OS_USER_SETTINGS="$W/onlypush.json" hooks/setup-check.sh </dev/null)" "README"
+assert_contains "settings.example.json asks for git -C push too" "$(jq -r '.permissions.ask | join(" ")' settings.example.json)" 'Bash(git -C * push *)'
+assert_not_contains "Known gaps no longer says git -C is uncaught" "$(sed -n '/^## Known gaps/,/^## Make/p' README.md)" 'does not catch `git -C . push`'
+for f in .claude-plugin/ hooks/hooks.json hooks/setup-check.sh hooks/dedupe.sh; do
+  assert_contains "README inventory lists $f" "$(sed -n "/^## What's inside/,/^## Start here/p" README.md)" "$f"
+done
 summary

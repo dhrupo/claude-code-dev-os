@@ -70,7 +70,7 @@ Installed as the `dev-os` plugin? The same skills and agents are named `dev-os:<
     `lessons.md` holds only patterns found in review or after release.
 
 ## 6. Enforced (everything else is a request)
-- `permissions.ask`: `git push`, `gh pr create` always prompt.
+- `permissions.ask`: `git push` (also `git -C <dir> push`) and `gh pr create` always prompt.
 - Git `pre-commit` test gate (`bin/gate-install`, per repo): no commit while the tests fail.
 - PostToolUse `scope-guard.sh`: warns on edits outside the active plan's `scope.txt`.
 - Stop `stop-check.sh`: sends the agent back once for unplanned files, source with no test, or a weakened test.

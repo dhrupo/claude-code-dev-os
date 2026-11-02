@@ -53,6 +53,9 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | Path | What it does |
 |---|---|
 | `settings.example.json` | `permissions.ask` for push/PR, every hook below, the status line |
+| `.claude-plugin/`, `hooks/hooks.json` | The `dev-os` plugin: manifests and the plugin's hook wiring (a test keeps it equal to `settings.example.json`) |
+| `hooks/dedupe.sh` | Loaded by every hook: under the plugin, a hook steps aside when you already wired the kit's own copy by hand |
+| `hooks/setup-check.sh` | Plugin only, `SessionStart`: says once when the push/PR ask rules are missing (a plugin can't add them) |
 | `hooks/reminder.sh` | `UserPromptSubmit`: one-paragraph rule reminder; logs prompts that look like a correction |
 | `hooks/scope-guard.sh` | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
 | `hooks/stop-check.sh` | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
@@ -67,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 178 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 187 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -175,8 +178,8 @@ and 6 grew).
 
 ## Known gaps
 
-- `permissions.ask` matches the command prefix: `Bash(git push:*)` does not catch `git -C . push`. The test gate and
-  branch protection on the remote are the backstops.
+- `permissions.ask` matches command text: the kit asks for `git push`, `git -C <dir> push` and `gh pr create`, but
+  other spellings (`git -c x=y push`, `env … git push`) slip past. The test gate and branch protection are the backstops.
 - Skill pinning (`skills.lock`, overlays, a sync script) is described in the v1 post but not shipped here.
 
 ## Make it yours

@@ -1,11 +1,13 @@
 {
   "name": "dhrupo",
-  "owner": { "name": "Dhrupo", "url": "https://github.com/dhrupo" },
+  "owner": {
+    "name": "Dhrupo",
+    "url": "https://github.com/dhrupo"
+  },
   "plugins": [
     {
       "name": "dev-os",
       "source": "./",
-      "version": "2.1.0",
       "description": "Relay skills, review agents and enforcement hooks for Claude Code."
     }
   ]
