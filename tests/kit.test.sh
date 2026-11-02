@@ -2,7 +2,9 @@
 # Kit shape: one rulebook for every agent, nothing private, skills and agents present.
 cd "$(dirname "$0")/.." || exit 2
 . tests/lib.sh
-assert_contains "AGENTS.md is a link to CLAUDE.md" "$(readlink AGENTS.md)" "CLAUDE.md"
+assert_contains "AGENTS.md is a regular file (the plugin directory blocks symlinks)" "$(test -f AGENTS.md && ! test -L AGENTS.md && echo yes)" "yes"
+assert_contains "AGENTS.md is an exact copy of CLAUDE.md" "$(cmp -s AGENTS.md CLAUDE.md && echo same)" "same"
+assert_contains "the repo tracks no symlinks" "[$(git ls-files -s | awk '$1==120000 {print $4}')]" "[]"
 assert_contains "graph first rule" "$(cat CLAUDE.md)" "graph"
 assert_contains "smallest-change ladder credits ponytail" "$(cat CLAUDE.md)" "github.com/DietrichGebert/ponytail"
 assert_contains "ladder has the reuse rung" "$(cat CLAUDE.md)" "already in this codebase"

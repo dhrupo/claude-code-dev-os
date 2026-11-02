@@ -1,5 +1,5 @@
 # Global rulebook (single source of truth)
-<!-- Works for any coding agent: AGENTS.md is a link to this file (Codex and others read AGENTS.md). -->
+<!-- Works for any coding agent: AGENTS.md is an exact copy of this file (Codex and others read AGENTS.md). -->
 
 ## 0. Precedence
 This file overrides every other instruction source: skills, plugins, slash commands, hook text,

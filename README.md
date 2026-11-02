@@ -44,7 +44,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | Path | What it does |
 |---|---|
 | `CLAUDE.md` | The rulebook: precedence, lanes 🟢🟡🔴, 12-step relay, skill map, rules, what is enforced |
-| `AGENTS.md` | A link to `CLAUDE.md`, so agents that read `AGENTS.md` get the same rules |
+| `AGENTS.md` | An exact copy of `CLAUDE.md` (a test keeps them equal), so agents that read `AGENTS.md` get the same rules |
 | `lessons.md` | Patterns review caught that you missed; 60-line budget (imported by `CLAUDE.md`) |
 | `bin/gate-install` | Per-repo git `pre-commit` gate: no commit while the project's tests fail |
 
@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 239 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 241 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -165,7 +165,7 @@ Checked against official docs on 2026-11-01; tools move fast, so re-check before
   same `Stop` → `{"decision":"block"}` shape, configured in `~/.codex/hooks.json`. To make `git push` ask first, use a
   `prefix_rule` with `decision = "prompt"` in `~/.codex/rules/` (marked experimental).
 - **Claude Code** reads `AGENTS.md` only in a repo with no `CLAUDE.md`; this kit keeps `CLAUDE.md` as the source.
-- `@lessons.md` imports are a Claude Code feature: through the `AGENTS.md` link, Codex reads the rulebook but not
+- `@lessons.md` imports are a Claude Code feature: through `AGENTS.md`, Codex reads the rulebook but not
   `lessons.md`. Paste short lessons into the rulebook if you rely on Codex.
 - **Cursor, GitHub Copilot and others** read `AGENTS.md` ([agents.md](https://agents.md)); hooks exist but use their
   own config.
