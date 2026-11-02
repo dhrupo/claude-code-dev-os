@@ -93,7 +93,8 @@ may refresh `.git/index`, as it always does).
 | `setup-check.sh` | `SessionStart(startup)` | your `settings.json` | `state/setup-check.warned` | No; one notice |
 
 `dedupe.sh` runs inside each hook and only reads: your `settings.json` and the hook scripts it names (to see if they
-are the kit's own). No network calls. The plugin never edits your settings, never commits and never pushes. "Stop Claude" means a `Stop` hook sends Claude back to finish one step.
+are the kit's own). No network calls. The plugin never edits your settings, never commits and never pushes.
+"Stop Claude" means a `Stop` hook sends Claude back to finish one step.
 
 ## Start here
 
