@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 252 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 254 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -144,7 +144,7 @@ cp -Rn "$KIT"/skills/* ~/.claude/skills/; cp -n "$KIT"/agents/*.md ~/.claude/age
 
 Merge `settings.example.json` into `~/.claude/settings.json` by hand (`permissions`, `hooks`, `statusLine`).
 Already have a status line? Keep it, and add the line that saves the context % for `ctx-handoff.sh`:
-`[ -n "$USED" ] && mkdir -p ~/.claude/state && echo "${USED%.*}" > ~/.claude/state/ctx-$SID.txt`
+`[ -n "$USED" ] && (umask 077; mkdir -p ~/.claude/state && echo "${USED%.*}" > ~/.claude/state/ctx-$SID.txt)`
 (`USED` = `.context_window.used_percentage`, `SID` = `.session_id` from the status line's JSON input).
 
 **5. Check it works:**

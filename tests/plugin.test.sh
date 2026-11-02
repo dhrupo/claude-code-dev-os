@@ -95,8 +95,10 @@ printf '{"permissions":{"ask":["Bash(git push:*)"]}}' > "$W/onlypush.json"; rm -
 assert_contains "setup-check wants all three ask rules" "$(DEV_OS_USER_SETTINGS="$W/onlypush.json" hooks/setup-check.sh </dev/null)" "README"
 ( umask 022
   printf '{"tool_name":"Skill","tool_input":{"skill":"x"},"cwd":"/p","session_id":"s1"}' | env -u CLAUDE_PLUGIN_ROOT DEV_OS_STATE="$W/st-skill" hooks/skill-log.sh
-  DEV_OS_USER_SETTINGS="$W/none.json" DEV_OS_STATE="$W/st-setup" hooks/setup-check.sh >/dev/null </dev/null )
+  env -u CLAUDE_PLUGIN_ROOT DEV_OS_USER_SETTINGS="$W/none.json" DEV_OS_STATE="$W/st-setup" hooks/setup-check.sh >/dev/null </dev/null )
 assert_contains "skill-log.sh creates a private state folder" "[$(ls -ld "$W/st-skill" 2>/dev/null | cut -c1-10)]" "[drwx------]"
+assert_contains "skill-usage.jsonl is private" "[$(ls -l "$W/st-skill/skill-usage.jsonl" 2>/dev/null | cut -c1-10)]" "[-rw-------]"
+assert_contains "README status-line snippet keeps the state private" "$(cat README.md)" '[ -n "$USED" ] && (umask 077; mkdir -p ~/.claude/state && echo "${USED%.*}" > ~/.claude/state/ctx-$SID.txt)'
 assert_contains "setup-check.sh creates a private state folder" "[$(ls -ld "$W/st-setup" 2>/dev/null | cut -c1-10)]" "[drwx------]"
 assert_contains "setup-check.warned is private" "[$(ls -l "$W/st-setup/setup-check.warned" 2>/dev/null | cut -c1-10)]" "[-rw-------]"
 assert_contains "settings.example.json asks for git -C push too" "$(jq -r '.permissions.ask | join(" ")' settings.example.json)" 'Bash(git -C * push *)'
