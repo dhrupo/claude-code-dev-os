@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 187 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 206 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -116,6 +116,7 @@ pull that changes it.
 ```bash
 mkdir -p ~/.claude/hooks ~/.claude/skills ~/.claude/agents
 cp -n "$KIT"/hooks/*.sh ~/.claude/hooks/; chmod +x ~/.claude/hooks/*.sh
+cp -n "$KIT"/hooks/*.py ~/.claude/hooks/
 cp -Rn "$KIT"/skills/* ~/.claude/skills/; cp -n "$KIT"/agents/*.md ~/.claude/agents/
 ```
 
@@ -168,7 +169,7 @@ plan skill now copies its template, plan-check gained check 5, and build-check r
 
 ```bash
 (cd ~/.claude && git add -A && git commit -m "Before v2")   # one commit to undo with git revert
-cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" ~/.claude/hooks/
+cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" "$KIT/hooks/stop-check.py" ~/.claude/hooks/
 cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/; cp "$KIT/skills/plan-check/SKILL.md" ~/.claude/skills/plan-check/
 cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
 ```

@@ -81,4 +81,20 @@ assert_not_contains "Known gaps no longer says git -C is uncaught" "$(sed -n '/^
 for f in .claude-plugin/ hooks/hooks.json hooks/setup-check.sh hooks/dedupe.sh; do
   assert_contains "README inventory lists $f" "$(sed -n "/^## What's inside/,/^## Start here/p" README.md)" "$f"
 done
+
+echo "# hooks keep Python in .py files (the directory review blocks inline python3 -c)"
+SH=$(ls hooks/*.sh 2>/dev/null)
+assert_contains "hook scripts found" "$(printf '%s' "$SH" | wc -w | tr -d ' ')" "1"
+assert_contains "no hook runs inline python3 -c" "[$(grep -l 'python3 -c' $SH 2>/dev/null)]" "[]"
+for h in learn scope-guard stop-check; do
+  assert_contains "hooks/$h.sh execs its .py" "$(cat "hooks/$h.sh")" 'exec python3 "$PY"'
+  assert_contains "hooks/$h.sh points PY at $h.py" "$(cat "hooks/$h.sh")" "PY=\"\$(dirname \"\$0\")/$h.py\""
+  assert_contains "hooks/$h.py exists" "$(test -s "hooks/$h.py" && echo yes)" "yes"
+  rm -rf "$W/nopy"; mkdir -p "$W/nopy"; cp hooks/"$h".sh hooks/dedupe.sh "$W/nopy/"
+  err=$(printf '{"session_id":"s1","stop_hook_active":false}' | env -u CLAUDE_PLUGIN_ROOT "$W/nopy/$h.sh" 2>&1 >/dev/null); rc=$?
+  assert_contains "$h.sh with its .py missing exits 0 (got $rc)" "$rc" "0"
+  assert_contains "$h.sh with its .py missing says so" "$err" "dev-os: $h.py missing, copy hooks/*.py"
+done
+assert_contains "copy install copies the .py hooks" "$(cat README.md)" 'cp -n "$KIT"/hooks/*.py ~/.claude/hooks/'
+assert_contains "v1 upgrade copies stop-check.py with stop-check.sh" "$(cat README.md)" '"$KIT/hooks/stop-check.sh" "$KIT/hooks/stop-check.py"'
 summary
