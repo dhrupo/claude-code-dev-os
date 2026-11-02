@@ -8,4 +8,4 @@ if jq -e '[.permissions.ask[]? | select(startswith("Bash(git push"))] | length >
 fi
 [ -f "$MARK" ] && exit 0
 touch "$MARK"
-echo "dev-os: ~/.claude/settings.json has no ask rule for git push or gh pr create, so pushes won't stop for a yes. Tell the user once: see the kit README, section \"After install\" (https://github.com/dhrupo/claude-code-dev-os#after-install)."
+echo "dev-os: your Claude settings.json has no ask rule for git push or gh pr create, so pushes won't stop for a yes. Tell the user once: see the kit README, section \"After install\" (https://github.com/dhrupo/claude-code-dev-os#after-install)."
