@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 240 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 249 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -226,6 +226,20 @@ and 6 grew).
 - After editing `CLAUDE.md`, run `cp CLAUDE.md AGENTS.md` so other agents get the same rules (a test checks they match).
 - When review catches something, run `reflect`: a test or hook beats a new line in `lessons.md`.
 - Add a hook only for a rule you can't afford to have skipped, and give it a test.
+
+## Privacy
+
+The plugin makes no network calls and runs no server. It keeps small notes on your machine: in `$DEV_OS_STATE`
+(default `~/.claude/state`), and `dev-os-scope` and `dev-os-scope.warned` in your repo's git folder. The notes hold
+the first 120 bytes of prompts that look like corrections, the problems `stop-check` found (file names and flags),
+each skill use (skill name, working folder, session id), plan paths and the context %. "What the plugin runs" above
+lists every file each hook reads, writes and deletes.
+
+Hook output (rule reminders, warnings, the plan after compaction, `Stop` messages that can quote these notes) goes
+into your Claude session. Like any text in the session, Claude Code sends it to the model.
+
+You can delete `~/.claude/state` at any time. Files named `ctx-*`, `learn-*` and `plans-*` are also deleted once 8
+or more days old.
 
 ## License
 

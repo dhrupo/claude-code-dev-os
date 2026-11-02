@@ -6,6 +6,9 @@
   "homepage": "https://github.com/dhrupo/claude-code-dev-os",
   "repository": "https://github.com/dhrupo/claude-code-dev-os",
   "license": "MIT",
+  "documentationUrl": "https://github.com/dhrupo/claude-code-dev-os#readme",
+  "supportUrl": "https://github.com/dhrupo/claude-code-dev-os/issues",
+  "privacyPolicyUrl": "https://github.com/dhrupo/claude-code-dev-os#privacy",
   "keywords": ["tdd", "code-review", "hooks", "agents", "workflow"],
   "icon": ".claude-plugin/icon.png"
 }
