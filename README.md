@@ -229,22 +229,17 @@ and 6 grew).
 
 ## Privacy
 
-The plugin makes no network calls and runs no server. It keeps these files on your machine, in `$DEV_OS_STATE`
-(default `~/.claude/state`):
+The plugin makes no network calls and runs no server. It keeps small notes on your machine: in `$DEV_OS_STATE`
+(default `~/.claude/state`), and `dev-os-scope` and `dev-os-scope.warned` in your repo's git folder. The notes hold
+the first 120 bytes of prompts that look like corrections, the problems `stop-check` found (file names and flags),
+each skill use (skill name, working folder, session id), plan paths and the context %. "What the plugin runs" above
+lists every file each hook reads, writes and deletes.
 
-- `learn-<session>.jsonl`: the first 120 bytes of a prompt that looks like a correction, and the file names
-  `stop-check` flagged
-- `skill-usage.jsonl`: per skill use, the skill name, working folder and session id
-- `plans-<session>.txt` (plan paths), `ctx-<session>.txt` (context %, written by the optional status line), and
-  one-shot markers (`*.warned`, `*.asked`)
+Hook output (rule reminders, warnings, the plan after compaction, `Stop` messages that can quote these notes) goes
+into your Claude session. Like any text in the session, Claude Code sends it to the model.
 
-It also writes `dev-os-scope.warned` in your repo's git folder. Files named `ctx-*`, `learn-*` and `plans-*` are
-deleted once 8 or more days old. `skill-usage.jsonl`, `setup-check.warned` and `dev-os-scope.warned`
-stay until you delete them.
-
-When a `Stop` hook sends Claude back, its message can quote these notes, such as a saved prompt snippet. Like any text
-in your session, Claude Code sends them to the model. "What the plugin runs" above lists every file each hook reads
-and writes.
+You can delete `~/.claude/state` at any time. Files named `ctx-*`, `learn-*` and `plans-*` are also deleted once 8
+or more days old.
 
 ## License
 

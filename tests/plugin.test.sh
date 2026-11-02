@@ -18,9 +18,9 @@ assert_contains "listing links to documentation (README)" "[$(jq -r '.documentat
 assert_contains "listing links to the privacy section" "[$(jq -r '.privacyPolicyUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#privacy]"
 PRIV=$(sed -n '/^## Privacy$/,/^## /p' README.md)
 assert_contains "README Privacy says the plugin makes no network calls" "$PRIV" "makes no network calls"
-assert_contains "README Privacy says hook messages reach the model" "$PRIV" "Claude Code sends them to the model"
-assert_contains "README Privacy names the marker in the repo git folder" "$PRIV" "dev-os-scope.warned"
-assert_contains "README Privacy names the files kept until deleted" "$PRIV" "stay until you delete them"
+assert_contains "README Privacy says hook output reaches the model" "$PRIV" "Claude Code sends it to the model"
+assert_contains "README Privacy names the files in the repo git folder" "$PRIV" '`dev-os-scope` and `dev-os-scope.warned`'
+assert_contains "README Privacy says the notes can be deleted any time" "$PRIV" "You can delete"
 assert_contains "README Privacy names the stored prompt snippet" "$PRIV" "first 120 bytes"
 assert_contains "README Privacy names the state folder" "$PRIV" "~/.claude/state"
 ICON=$(jq -r '.icon // empty' "$P" 2>/dev/null)
