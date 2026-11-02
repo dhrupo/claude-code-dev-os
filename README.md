@@ -70,9 +70,28 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 206 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 217 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
+
+## What the plugin runs
+
+Every hook is a local shell script (some start Python 3 from `hooks/*.py`). "State" is `$DEV_OS_STATE`, default
+`~/.claude/state`. Git commands are read-only: `rev-parse`, `status`, `diff`, `cat-file`.
+
+| Hook | Event | Reads | Writes | Can it stop Claude? |
+|---|---|---|---|---|
+| `reminder.sh` | `UserPromptSubmit` | your prompt | a prompt that looks like a correction: its first 120 characters to `state/learn-<session>.jsonl` | No; adds a rule reminder |
+| `skill-log.sh` | `PreToolUse(Skill)`, `UserPromptExpansion` | the skill name | skill, folder and session id to `state/skill-usage.jsonl` | No |
+| `scope-guard.sh` | `PostToolUse` (Edit, Write) | the edited path, `.git/dev-os-scope`, the plan's `scope.txt` | nothing | No; adds a warning |
+| `stop-check.sh` | `Stop` | `git status`/`diff`, the plan's `scope.txt` | `.git/dev-os-scope.warned`, `state/learn-<session>.jsonl` | Once per new set of problems |
+| `learn.sh` | `Stop` | `state/learn-<session>.jsonl`, `state/skill-usage.jsonl` | `state/learn-<session>.warned` | Once per new set of mistakes |
+| `ctx-handoff.sh` | `Stop` | `.git/dev-os-scope`, `state/ctx-<session>.txt` | `state/plans-<session>.txt`, `state/ctx-<session>.asked`; deletes its own state files older than 7 days | Once per new plan, once at 80% context |
+| `compact.sh` | `SessionStart(compact)` | `.git/dev-os-scope`, the plan's `tasks.md` | nothing | No; restates the plan |
+| `setup-check.sh` | `SessionStart(startup)` | your `settings.json` | `state/setup-check.warned` | No; one notice |
+
+`dedupe.sh` runs inside each hook and only reads your `settings.json`. No network calls. The plugin never edits your settings,
+never commits and never pushes. "Stop Claude" means a `Stop` hook sends Claude back to finish one step.
 
 ## Start here
 

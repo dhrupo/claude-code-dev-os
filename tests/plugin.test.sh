@@ -97,4 +97,12 @@ for h in learn scope-guard stop-check; do
 done
 assert_contains "copy install copies the .py hooks" "$(cat README.md)" 'cp -n "$KIT"/hooks/*.py ~/.claude/hooks/'
 assert_contains "v1 upgrade copies stop-check.py with stop-check.sh" "$(cat README.md)" '"$KIT/hooks/stop-check.sh" "$KIT/hooks/stop-check.py"'
+
+echo "# README discloses what the plugin runs"
+RUNS=$(sed -n '/^## What the plugin runs/,/^## /p' README.md)
+HOOKS=$(jq -r '.. | .command? // empty' hooks/hooks.json 2>/dev/null | sed 's#.*/hooks/##' | sort -u)
+assert_contains "hooks.json wires 8 scripts" "$(printf '%s\n' "$HOOKS" | grep -c .)" "8"
+for s in $HOOKS; do assert_contains "What the plugin runs names $s" "$RUNS" "\`$s\`"; done
+assert_contains "What the plugin runs says no network calls" "$RUNS" "No network calls"
+assert_contains "What the plugin runs says settings are never edited" "$RUNS" "never edits your settings"
 summary
