@@ -111,7 +111,7 @@ for h in learn scope-guard stop-check; do
 done
 assert_contains "copy install copies the .py hooks" "$(cat README.md)" 'cp -n "$KIT"/hooks/*.py ~/.claude/hooks/'
 assert_contains "2.1.0 copy installs are told to overwrite the Python hooks" "$(sed -n '/^## Upgrading a 2.1.0 copy install/,/^## /p' README.md)" 'cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/'
-assert_contains "the 2.1.0 upgrade points plugin installs at the plugin update" "$(sed -n '/^## Upgrading a 2.1.0 copy install/,/^## /p' README.md)" "Plugin installs"
+assert_contains "the 2.1.0 upgrade tells plugin users with hand-wired copies to overwrite them" "$(sed -n '/^## Upgrading a 2.1.0 copy install/,/^## /p' README.md)" "If you also wired copied hooks by hand, run the command above"
 assert_contains "What the plugin runs counts the prompt cut in bytes" "$(sed -n '/^## What the plugin runs/,/^## /p' README.md)" "first 120 bytes"
 assert_contains "What the plugin runs states the cleanup age find uses" "$(sed -n '/^## What the plugin runs/,/^## /p' README.md)" "8 or more days old"
 assert_contains "v1 upgrade copies stop-check.py with stop-check.sh" "$(cat README.md)" '"$KIT/hooks/stop-check.sh" "$KIT/hooks/stop-check.py"'

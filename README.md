@@ -185,13 +185,15 @@ with no pointer they stay silent. It lives inside `.git/`, so it is never commit
 
 ## Upgrading a 2.1.0 copy install
 
-2.1.1 runs the Python of three hooks from `hooks/*.py` instead of `python3 -c`, so a `json.py` in your project can't
-replace Python's own (`-I` also ignores one next to the hook). `cp -n` keeps your old copies, so overwrite them.
-Plugin installs get this with the plugin update; don't copy hooks next to the plugin.
+2.1.1 runs the Python of three hooks from `hooks/*.py`, not `python3 -c`. So a `json.py` in your project can't replace
+Python's own, and `-I` also ignores one next to the hook. `cp -n` keeps your old copies, so overwrite them:
 
 ```bash
 cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/
 ```
+
+A plugin-only install gets this with the plugin update. If you also wired copied hooks by hand, run the command above:
+the plugin steps aside for them.
 
 ## Upgrading from v1
 
