@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 240 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 246 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -226,6 +226,18 @@ and 6 grew).
 - After editing `CLAUDE.md`, run `cp CLAUDE.md AGENTS.md` so other agents get the same rules (a test checks they match).
 - When review catches something, run `reflect`: a test or hook beats a new line in `lessons.md`.
 - Add a hook only for a rule you can't afford to have skipped, and give it a test.
+
+## Privacy
+
+No data leaves your machine: the plugin makes no network calls and has no server. The hooks write small files to
+`$DEV_OS_STATE`, default `~/.claude/state`:
+
+- a prompt that looks like a correction: its first 120 bytes, in `learn-<session>.jsonl`
+- each skill use: the skill name, working folder and session id, in `skill-usage.jsonl`
+- one-shot markers (`*.warned`, `*.asked`) and the plans seen per session
+
+`ctx-*`, `learn-*` and `plans-*` files are deleted once 8 or more days old. The rest stays until you delete the
+folder. "What the plugin runs" above lists every file each hook reads and writes.
 
 ## License
 

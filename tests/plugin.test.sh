@@ -13,6 +13,13 @@ PV=$(jq -r .version "$P" 2>/dev/null); MV=$(jq -r '.plugins[] | select(.name=="d
 assert_contains "plugin has a semver version (got $PV)" "$(printf '%s' "$PV" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" "$PV"
 assert_contains "plugin.json alone owns the version (marketplace has none)" "[$MV]" "[null]"
 assert_contains "plugin version is 2.1.1" "$PV" "2.1.1"
+assert_contains "listing links to support (GitHub issues)" "[$(jq -r '.supportUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os/issues]"
+assert_contains "listing links to documentation (README)" "[$(jq -r '.documentationUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#readme]"
+assert_contains "listing links to the privacy section" "[$(jq -r '.privacyPolicyUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#privacy]"
+PRIV=$(sed -n '/^## Privacy$/,/^## /p' README.md)
+assert_contains "README Privacy says nothing leaves the machine" "$PRIV" "No data leaves your machine"
+assert_contains "README Privacy names the stored prompt snippet" "$PRIV" "first 120 bytes"
+assert_contains "README Privacy names the state folder" "$PRIV" "~/.claude/state"
 ICON=$(jq -r '.icon // empty' "$P" 2>/dev/null)
 assert_contains "plugin.json icon is .claude-plugin/icon.png" "[$ICON]" "[.claude-plugin/icon.png]"
 assert_contains "icon file is a PNG" "$(file -b "$ICON" 2>/dev/null)" "PNG image data"
