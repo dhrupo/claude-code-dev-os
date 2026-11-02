@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 229 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 235 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -83,12 +83,12 @@ may refresh `.git/index`, as it always does).
 
 | Hook | Event | Reads | Writes | Can it stop Claude? |
 |---|---|---|---|---|
-| `reminder.sh` | `UserPromptSubmit` | your prompt | a prompt that looks like a correction: its first 120 characters to `state/learn-<session>.jsonl` | No; adds a rule reminder |
+| `reminder.sh` | `UserPromptSubmit` | your prompt | a prompt that looks like a correction: its first 120 bytes to `state/learn-<session>.jsonl` | No; adds a rule reminder |
 | `skill-log.sh` | `PreToolUse(Skill)`, `UserPromptExpansion` | the skill name | skill, folder and session id to `state/skill-usage.jsonl` | No |
 | `scope-guard.sh` | `PostToolUse` (Edit, Write, MultiEdit, NotebookEdit) | the edited path, `.git/dev-os-scope`, the plan's `scope.txt` | nothing | No; adds a warning |
 | `stop-check.sh` | `Stop` | `git status`/`diff`, the plan's `scope.txt` | `.git/dev-os-scope.warned`, `state/learn-<session>.jsonl` | Once per new set of problems |
 | `learn.sh` | `Stop` | `state/learn-<session>.jsonl`, `state/skill-usage.jsonl` | `state/learn-<session>.warned` | Once per new set of mistakes |
-| `ctx-handoff.sh` | `Stop` | `.git/dev-os-scope`, `state/ctx-<session>.txt` | `state/plans-<session>.txt`, `state/ctx-<session>.asked`; deletes `state/ctx-*`, `learn-*` and `plans-*` files older than 7 days | Once per new plan, once at 80% context |
+| `ctx-handoff.sh` | `Stop` | `.git/dev-os-scope`, `state/ctx-<session>.txt` | `state/plans-<session>.txt`, `state/ctx-<session>.asked`; deletes `state/ctx-*`, `learn-*` and `plans-*` files 8 or more days old | Once per new plan, once at 80% context |
 | `compact.sh` | `SessionStart(compact)` | `.git/dev-os-scope`, the plan's `tasks.md` | nothing | No; restates the plan |
 | `setup-check.sh` | `SessionStart(startup)` | your `settings.json` | `state/setup-check.warned` | No; one notice |
 
@@ -182,6 +182,15 @@ refresh it after big merges. What was *learned* lives in `lessons.md` and the pl
 
 The `plan` skill writes the plan's `scope.txt` path into `<repo>/.git/dev-os-scope`. The hooks read that pointer;
 with no pointer they stay silent. It lives inside `.git/`, so it is never committed. Remove it when the PR is opened.
+
+## Upgrading from 2.1.0
+
+2.1.1 moved the Python of three hooks into `hooks/*.py` and runs it isolated (`python3 -I`), so a `json.py` in your
+project can't replace Python's own. `cp -n` keeps your old copies, so overwrite those three hooks:
+
+```bash
+cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/
+```
 
 ## Upgrading from v1
 

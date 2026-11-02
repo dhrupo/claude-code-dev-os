@@ -104,8 +104,14 @@ for h in learn scope-guard stop-check; do
   cp hooks/"$h".py "$W/nopy/"; printf 'raise SystemExit("stray json.py loaded")\n' > "$W/nopy/json.py"
   err=$(printf '{"session_id":"s1","stop_hook_active":true}' | env -u CLAUDE_PLUGIN_ROOT DEV_OS_STATE="$W/nopy-state" "$W/nopy/$h.sh" 2>&1 >/dev/null)
   assert_not_contains "$h.sh ignores a stray json.py next to it" "$err" "stray json.py loaded"
+  mkdir -p "$W/proj"; printf 'raise SystemExit("project json.py loaded")\n' > "$W/proj/json.py"
+  err=$(cd "$W/proj" && printf '{"session_id":"s1","stop_hook_active":true}' | env -u CLAUDE_PLUGIN_ROOT DEV_OS_STATE="$W/nopy-state" "$OLDPWD/hooks/$h.sh" 2>&1 >/dev/null)
+  assert_not_contains "$h.sh ignores a json.py in the project folder" "$err" "project json.py loaded"
 done
 assert_contains "copy install copies the .py hooks" "$(cat README.md)" 'cp -n "$KIT"/hooks/*.py ~/.claude/hooks/'
+assert_contains "2.1.0 copy installs are told to overwrite the Python hooks" "$(sed -n '/^## Upgrading from 2.1.0/,/^## /p' README.md)" 'cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/'
+assert_contains "What the plugin runs counts the prompt cut in bytes" "$(sed -n '/^## What the plugin runs/,/^## /p' README.md)" "first 120 bytes"
+assert_contains "What the plugin runs states the cleanup age find uses" "$(sed -n '/^## What the plugin runs/,/^## /p' README.md)" "8 or more days old"
 assert_contains "v1 upgrade copies stop-check.py with stop-check.sh" "$(cat README.md)" '"$KIT/hooks/stop-check.sh" "$KIT/hooks/stop-check.py"'
 
 echo "# README discloses what the plugin runs"
