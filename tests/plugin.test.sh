@@ -12,7 +12,7 @@ assert_contains "marketplace has an owner" "$(jq -r '.owner.name // empty' "$M" 
 PV=$(jq -r .version "$P" 2>/dev/null); MV=$(jq -r '.plugins[] | select(.name=="dev-os") | .version' "$M" 2>/dev/null)
 assert_contains "plugin has a semver version (got $PV)" "$(printf '%s' "$PV" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" "$PV"
 assert_contains "plugin.json alone owns the version (marketplace has none)" "[$MV]" "[null]"
-assert_contains "plugin version is 2.1.1" "$PV" "2.1.1"
+assert_contains "plugin version is 2.1.2" "$PV" "2.1.2"
 assert_contains "listing links to support (GitHub issues)" "[$(jq -r '.supportUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os/issues]"
 assert_contains "listing links to documentation (README)" "[$(jq -r '.documentationUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#readme]"
 assert_contains "listing links to the privacy section" "[$(jq -r '.privacyPolicyUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#privacy]"
@@ -93,6 +93,12 @@ assert_contains "another tool's hook with the same name does not silence the kit
 assert_contains "a quoted hand-wired kit copy still counts" "[$(prompt | CLAUDE_PLUGIN_ROOT="$PWD" DEV_OS_USER_SETTINGS="$W/quoted.json" hooks/reminder.sh)]" "[]"
 printf '{"permissions":{"ask":["Bash(git push:*)"]}}' > "$W/onlypush.json"; rm -f "$DEV_OS_STATE/setup-check.warned"
 assert_contains "setup-check wants all three ask rules" "$(DEV_OS_USER_SETTINGS="$W/onlypush.json" hooks/setup-check.sh </dev/null)" "README"
+( umask 022
+  printf '{"tool_name":"Skill","tool_input":{"skill":"x"},"cwd":"/p","session_id":"s1"}' | env -u CLAUDE_PLUGIN_ROOT DEV_OS_STATE="$W/st-skill" hooks/skill-log.sh
+  DEV_OS_USER_SETTINGS="$W/none.json" DEV_OS_STATE="$W/st-setup" hooks/setup-check.sh >/dev/null </dev/null )
+assert_contains "skill-log.sh creates a private state folder" "[$(ls -ld "$W/st-skill" 2>/dev/null | cut -c1-10)]" "[drwx------]"
+assert_contains "setup-check.sh creates a private state folder" "[$(ls -ld "$W/st-setup" 2>/dev/null | cut -c1-10)]" "[drwx------]"
+assert_contains "setup-check.warned is private" "[$(ls -l "$W/st-setup/setup-check.warned" 2>/dev/null | cut -c1-10)]" "[-rw-------]"
 assert_contains "settings.example.json asks for git -C push too" "$(jq -r '.permissions.ask | join(" ")' settings.example.json)" 'Bash(git -C * push *)'
 assert_not_contains "Known gaps no longer says git -C is uncaught" "$(sed -n '/^## Known gaps/,/^## Make/p' README.md)" 'does not catch `git -C . push`'
 for f in .claude-plugin/ hooks/hooks.json hooks/setup-check.sh hooks/dedupe.sh hooks/learn.py hooks/scope-guard.py hooks/stop-check.py; do
