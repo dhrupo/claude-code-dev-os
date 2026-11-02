@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 246 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 249 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -229,15 +229,22 @@ and 6 grew).
 
 ## Privacy
 
-No data leaves your machine: the plugin makes no network calls and has no server. The hooks write small files to
-`$DEV_OS_STATE`, default `~/.claude/state`:
+The plugin makes no network calls and runs no server. It keeps these files on your machine, in `$DEV_OS_STATE`
+(default `~/.claude/state`):
 
-- a prompt that looks like a correction: its first 120 bytes, in `learn-<session>.jsonl`
-- each skill use: the skill name, working folder and session id, in `skill-usage.jsonl`
-- one-shot markers (`*.warned`, `*.asked`) and the plans seen per session
+- `learn-<session>.jsonl`: the first 120 bytes of a prompt that looks like a correction, and the file names
+  `stop-check` flagged
+- `skill-usage.jsonl`: per skill use, the skill name, working folder and session id
+- `plans-<session>.txt` (plan paths), `ctx-<session>.txt` (context %, written by the optional status line), and
+  one-shot markers (`*.warned`, `*.asked`)
 
-`ctx-*`, `learn-*` and `plans-*` files are deleted once 8 or more days old. The rest stays until you delete the
-folder. "What the plugin runs" above lists every file each hook reads and writes.
+It also writes `dev-os-scope.warned` in your repo's git folder. Files named `ctx-*`, `learn-*` and `plans-*` are
+deleted once 8 or more days old. `skill-usage.jsonl`, `setup-check.warned` and `dev-os-scope.warned`
+stay until you delete them.
+
+When a `Stop` hook sends Claude back, its message can quote these notes, such as a saved prompt snippet. Like any text
+in your session, Claude Code sends them to the model. "What the plugin runs" above lists every file each hook reads
+and writes.
 
 ## License
 
