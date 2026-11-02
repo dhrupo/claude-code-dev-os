@@ -11,6 +11,12 @@ assert_contains "marketplace has an owner" "$(jq -r '.owner.name // empty' "$M" 
 PV=$(jq -r .version "$P" 2>/dev/null); MV=$(jq -r '.plugins[] | select(.name=="dev-os") | .version' "$M" 2>/dev/null)
 assert_contains "plugin has a semver version (got $PV)" "$(printf '%s' "$PV" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" "$PV"
 assert_contains "plugin.json alone owns the version (marketplace has none)" "[$MV]" "[null]"
+assert_contains "plugin version is 2.1.1" "$PV" "2.1.1"
+ICON=$(jq -r '.icon // empty' "$P" 2>/dev/null)
+assert_contains "plugin.json icon is .claude-plugin/icon.png" "[$ICON]" "[.claude-plugin/icon.png]"
+assert_contains "icon file is a PNG" "$(file -b "$ICON" 2>/dev/null)" "PNG image data"
+assert_contains "icon is square, 512-2048 px" "$(od -An -tu1 -j16 -N8 "$ICON" 2>/dev/null | awk 'NF==8 {w=$1*16777216+$2*65536+$3*256+$4; h=$5*16777216+$6*65536+$7*256+$8; if (w==h && w>=512 && w<=2048) print "ok"}')" "ok"
+assert_contains "icon is under 2 MB" "$([ -f "$ICON" ] && [ "$(wc -c < "$ICON")" -lt 2097152 ] && echo ok)" "ok"
 
 echo "# plugin wiring matches the copy-install wiring"
 wiring() { jq -r '.hooks | to_entries[] | .key as $e | .value[] | (.matcher // "*") as $m | .hooks[] | "\($e) \($m) \(.command | sub(".*/hooks/"; "") | sub("\"$"; "")) \(.timeout)"' "$1" 2>/dev/null | sort; }
