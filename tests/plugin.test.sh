@@ -48,6 +48,12 @@ assert_contains "second session silent" "[$(sc "$W/none.json")]" "[]"
 assert_contains "ask present → silent" "[$(sc "$W/ask.json")]" "[]"
 assert_contains "removed again → warns again" "$(sc "$W/none.json")" "README"
 
+echo "# both read the active config folder (CLAUDE_CONFIG_DIR), not always ~/.claude"
+mkdir -p "$W/cfg" && printf '{}' > "$W/cfg/settings.json" && rm -f "$DEV_OS_STATE/setup-check.warned"
+assert_contains "setup-check reads CLAUDE_CONFIG_DIR's settings" "$(CLAUDE_CONFIG_DIR="$W/cfg" hooks/setup-check.sh </dev/null)" "README"
+cp "$W/wired.json" "$W/cfg/settings.json"
+assert_contains "dedupe reads CLAUDE_CONFIG_DIR's settings" "[$(prompt | CLAUDE_PLUGIN_ROOT="$PWD" CLAUDE_CONFIG_DIR="$W/cfg" hooks/reminder.sh)]" "[]"
+
 echo "# plugin skill names and paths"
 mkdir -p "$DEV_OS_STATE"
 printf '{"time":%s,"skill":"dev-os:reflect","sid":"s9"}\n' "$(($(date +%s)*1000+5000))" > "$DEV_OS_STATE/skill-usage.jsonl"
