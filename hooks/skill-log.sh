@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/dedupe.sh"
 # PreToolUse(Skill) + UserPromptExpansion (typed /skill): one line per skill use, read by learn.sh and meditate.
 STATE="${DEV_OS_STATE:-$HOME/.claude/state}"
 mkdir -p "$STATE" 2>/dev/null

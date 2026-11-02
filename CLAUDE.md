@@ -48,6 +48,7 @@ One task per session: a new plan gets a fresh session with a short handoff note.
 | Someone else's PR | `post-pr-review` | `/code-review` as a first pass only, never `--comment` |
 | Learn | `reflect` (automatic after a mistake or a review) | `meditate` only when asked |
 Add a row whenever two installed skills could both claim a job.
+Installed as the `dev-os` plugin? The same skills and agents are named `dev-os:<name>` (e.g. `dev-os:plan-check`).
 
 ## 5. Rules
 1. Root cause for bugs, not the symptom.

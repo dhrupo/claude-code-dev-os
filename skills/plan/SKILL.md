@@ -9,7 +9,7 @@ description: Use after grilling, when a 🔴 change needs a written plan, before
 `~/Documents/plans/<project>/<id>/` — `<id>` is a short kebab slug (`add-csv-export`). Never inside the code repo.
 
 ## Files
-Copy `~/.claude/skills/plan/template/` into the plan folder, then fill it in:
+Copy `${CLAUDE_SKILL_DIR}/template/` into the plan folder, then fill it in:
 1. `proposal.md` — one page, plain words, keep its four headings.
 2. `tasks.md` — checkboxes, one commit-sized slice each, failing test named first.
 3. `scope.txt` — every repo-relative file or glob this change may touch, tests included, one per line.
