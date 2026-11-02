@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 235 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 239 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -183,10 +183,11 @@ refresh it after big merges. What was *learned* lives in `lessons.md` and the pl
 The `plan` skill writes the plan's `scope.txt` path into `<repo>/.git/dev-os-scope`. The hooks read that pointer;
 with no pointer they stay silent. It lives inside `.git/`, so it is never committed. Remove it when the PR is opened.
 
-## Upgrading from 2.1.0
+## Upgrading a 2.1.0 copy install
 
-2.1.1 moved the Python of three hooks into `hooks/*.py` and runs it isolated (`python3 -I`), so a `json.py` in your
-project can't replace Python's own. `cp -n` keeps your old copies, so overwrite those three hooks:
+2.1.1 runs the Python of three hooks from `hooks/*.py` instead of `python3 -c`, so a `json.py` in your project can't
+replace Python's own (`-I` also ignores one next to the hook). `cp -n` keeps your old copies, so overwrite them.
+Plugin installs get this with the plugin update; don't copy hooks next to the plugin.
 
 ```bash
 cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/
