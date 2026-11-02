@@ -7,6 +7,7 @@ P=.claude-plugin/plugin.json; M=.claude-plugin/marketplace.json
 echo "# manifests"
 assert_contains "plugin is named dev-os" "$(jq -r .name "$P" 2>&1)" "dev-os"
 assert_contains "marketplace lists dev-os from this repo" "$(jq -r '.plugins[] | select(.name=="dev-os") | .source' "$M" 2>&1)" "./"
+assert_contains "marketplace has a description" "$(jq -r '.description // empty' "$M" 2>/dev/null | grep -c .)" "1"
 assert_contains "marketplace has an owner" "$(jq -r '.owner.name // empty' "$M" 2>/dev/null)" "Dhrupo"
 PV=$(jq -r .version "$P" 2>/dev/null); MV=$(jq -r '.plugins[] | select(.name=="dev-os") | .version' "$M" 2>/dev/null)
 assert_contains "plugin has a semver version (got $PV)" "$(printf '%s' "$PV" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" "$PV"
