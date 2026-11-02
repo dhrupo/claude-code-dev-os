@@ -1,5 +1,6 @@
 {
   "name": "dhrupo",
+  "description": "Dhrupo's Claude Code plugins: the dev-os relay of skills, review agents and enforcement hooks.",
   "owner": {
     "name": "Dhrupo",
     "url": "https://github.com/dhrupo"

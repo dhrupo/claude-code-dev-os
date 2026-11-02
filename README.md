@@ -57,9 +57,9 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `hooks/dedupe.sh` | Loaded by every hook: under the plugin, a hook steps aside when you already wired the kit's own copy by hand |
 | `hooks/setup-check.sh` | Plugin only, `SessionStart`: says once when the push/PR ask rules are missing (a plugin can't add them) |
 | `hooks/reminder.sh` | `UserPromptSubmit`: one-paragraph rule reminder; logs prompts that look like a correction |
-| `hooks/scope-guard.sh` | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
-| `hooks/stop-check.sh` | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
-| `hooks/learn.sh` | `Stop`: a logged mistake blocks once until the `reflect` skill runs |
+| `hooks/scope-guard.sh` (+ `hooks/scope-guard.py`) | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
+| `hooks/stop-check.sh` (+ `hooks/stop-check.py`) | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
+| `hooks/learn.sh` (+ `hooks/learn.py`) | `Stop`: a logged mistake blocks once until the `reflect` skill runs |
 | `hooks/ctx-handoff.sh` | `Stop`: offers a fresh session at ~80% context, or when a second plan starts |
 | `hooks/compact.sh` | `SessionStart(compact)`: restates the active plan and next task after compaction |
 | `hooks/skill-log.sh` | `PreToolUse(Skill)`: logs skill use, for `learn.sh` and `meditate` |
@@ -70,9 +70,31 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 187 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 239 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
+
+## What the plugin runs
+
+Every hook is a local shell script (some start Python 3 from `hooks/*.py`). "State" is `$DEV_OS_STATE`, default
+`~/.claude/state`. `.git/` means the repo's git folder (`git rev-parse --absolute-git-dir`; in a worktree,
+`.git/worktrees/<name>/`). Git commands only read your work: `rev-parse`, `status`, `diff`, `cat-file` (`git status`
+may refresh `.git/index`, as it always does).
+
+| Hook | Event | Reads | Writes | Can it stop Claude? |
+|---|---|---|---|---|
+| `reminder.sh` | `UserPromptSubmit` | your prompt | a prompt that looks like a correction: its first 120 bytes to `state/learn-<session>.jsonl` | No; adds a rule reminder |
+| `skill-log.sh` | `PreToolUse(Skill)`, `UserPromptExpansion` | the skill name | skill, folder and session id to `state/skill-usage.jsonl` | No |
+| `scope-guard.sh` | `PostToolUse` (Edit, Write, MultiEdit, NotebookEdit) | the edited path, `.git/dev-os-scope`, the plan's `scope.txt` | nothing | No; adds a warning |
+| `stop-check.sh` | `Stop` | `git status`/`diff`, the plan's `scope.txt` | `.git/dev-os-scope.warned`, `state/learn-<session>.jsonl` | Once per new set of problems |
+| `learn.sh` | `Stop` | `state/learn-<session>.jsonl`, `state/skill-usage.jsonl` | `state/learn-<session>.warned` | Once per new set of mistakes |
+| `ctx-handoff.sh` | `Stop` | `.git/dev-os-scope`, `state/ctx-<session>.txt` | `state/plans-<session>.txt`, `state/ctx-<session>.asked`; deletes `state/ctx-*`, `learn-*` and `plans-*` files 8 or more days old | Once per new plan, once at 80% context |
+| `compact.sh` | `SessionStart(compact)` | `.git/dev-os-scope`, the plan's `tasks.md` | nothing | No; restates the plan |
+| `setup-check.sh` | `SessionStart(startup)` | your `settings.json` | `state/setup-check.warned` | No; one notice |
+
+`dedupe.sh` runs inside each hook and only reads: your `settings.json` and the hook scripts it names (to see if they
+are the kit's own). No network calls. The plugin never edits your settings, never commits and never pushes.
+"Stop Claude" means a `Stop` hook sends Claude back to finish one step.
 
 ## Start here
 
@@ -116,6 +138,7 @@ pull that changes it.
 ```bash
 mkdir -p ~/.claude/hooks ~/.claude/skills ~/.claude/agents
 cp -n "$KIT"/hooks/*.sh ~/.claude/hooks/; chmod +x ~/.claude/hooks/*.sh
+cp -n "$KIT"/hooks/*.py ~/.claude/hooks/
 cp -Rn "$KIT"/skills/* ~/.claude/skills/; cp -n "$KIT"/agents/*.md ~/.claude/agents/
 ```
 
@@ -160,6 +183,18 @@ refresh it after big merges. What was *learned* lives in `lessons.md` and the pl
 The `plan` skill writes the plan's `scope.txt` path into `<repo>/.git/dev-os-scope`. The hooks read that pointer;
 with no pointer they stay silent. It lives inside `.git/`, so it is never committed. Remove it when the PR is opened.
 
+## Upgrading a 2.1.0 copy install
+
+2.1.1 runs the Python of three hooks from `hooks/*.py`, not `python3 -c`. So a `json.py` in your project can't replace
+Python's own, and `-I` also ignores one next to the hook. `cp -n` keeps your old copies, so overwrite them:
+
+```bash
+cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/
+```
+
+A plugin-only install gets this with the plugin update. If you also wired copied hooks by hand, run the command above:
+the plugin steps aside for them.
+
 ## Upgrading from v1
 
 Nothing was renamed. Do steps 2-4 above (with `-n` they only add what is missing), then replace the two v1 hooks
@@ -168,7 +203,7 @@ plan skill now copies its template, plan-check gained check 5, and build-check r
 
 ```bash
 (cd ~/.claude && git add -A && git commit -m "Before v2")   # one commit to undo with git revert
-cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" ~/.claude/hooks/
+cp "$KIT/hooks/reminder.sh" "$KIT/hooks/stop-check.sh" "$KIT/hooks/stop-check.py" ~/.claude/hooks/
 cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/; cp "$KIT/skills/plan-check/SKILL.md" ~/.claude/skills/plan-check/
 cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
 ```
