@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/dedupe.sh"
 # UserPromptSubmit: stdout is added to Claude's context on every prompt. Keep it to one short paragraph.
 # A prompt that looks like a correction is logged for learn.sh.
 umask 077

@@ -48,6 +48,7 @@ One task per session: a new plan gets a fresh session with a short handoff note.
 | Someone else's PR | `post-pr-review` | `/code-review` as a first pass only, never `--comment` |
 | Learn | `reflect` (automatic after a mistake or a review) | `meditate` only when asked |
 Add a row whenever two installed skills could both claim a job.
+Installed as the `dev-os` plugin? The same skills and agents are named `dev-os:<name>` (e.g. `dev-os:plan-check`).
 
 ## 5. Rules
 1. Root cause for bugs, not the symptom.
@@ -69,7 +70,7 @@ Add a row whenever two installed skills could both claim a job.
     `lessons.md` holds only patterns found in review or after release.
 
 ## 6. Enforced (everything else is a request)
-- `permissions.ask`: `git push`, `gh pr create` always prompt.
+- `permissions.ask`: `git push` (also `git -C <dir> push`) and `gh pr create` always prompt.
 - Git `pre-commit` test gate (`bin/gate-install`, per repo): no commit while the tests fail.
 - PostToolUse `scope-guard.sh`: warns on edits outside the active plan's `scope.txt`.
 - Stop `stop-check.sh`: sends the agent back once for unplanned files, source with no test, or a weakened test.

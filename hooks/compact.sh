@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/dedupe.sh"
 # SessionStart(compact): restate the active plan and its next unticked task, which compaction tends to drop.
 CWD=$(jq -r '.cwd // empty' 2>/dev/null)
 [ -d "$CWD" ] || exit 0

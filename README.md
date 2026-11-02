@@ -8,6 +8,35 @@ Claude Code layer; Codex has close equivalents (see [Other agents](#other-agents
 Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-up-claude-code-one-rulebook-a-12-step-relay-to-use-it-daily-40gi)** ·
 **[v2 — gates, a learning loop, agents that check agents](https://dev.to/dhrupo/dev-os-v2-gates-a-learning-loop-and-agents-that-check-agents-4a9b)**.
 
+## Install for Claude Code (2 commands)
+
+```text
+/plugin marketplace add dhrupo/claude-code-dev-os
+/plugin install dev-os@dhrupo
+```
+
+You get the relay skills (`dev-os:plan`, `dev-os:plan-check`, …), the `scout` and `review-lens` agents, the hooks,
+and `gate-install` on the agent's PATH. Then do the three steps in [After install](#after-install): a plugin can't
+add your rulebook, your push/PR ask rules or a status line. Using Codex, Cursor or another agent, or prefer files you
+can edit? Use [Start here](#start-here) instead.
+
+**Pick one install.** Hooks you already copied into `~/.claude/settings.json` win: the plugin's copy of the same
+hook stays quiet, so nothing runs twice. To move from the copied hooks to the plugin, delete the kit's lines from the
+`hooks` block in `~/.claude/settings.json`, then restart.
+
+## After install
+
+`RAW=https://raw.githubusercontent.com/dhrupo/claude-code-dev-os/main` (each step skips a file you already have):
+
+1. Rulebook: `for f in CLAUDE.md lessons.md; do [ -e ~/.claude/$f ] || curl -fsSL "$RAW/$f" -o ~/.claude/$f; done`
+   (already have a `CLAUDE.md`? merge ours by hand; keep section 0, Precedence, at the top).
+2. Ask before push and PR: add to `permissions.ask` in `~/.claude/settings.json`:
+   `"Bash(git push:*)", "Bash(git -C * push *)", "Bash(gh pr create:*)"` (rules match the command text, so the
+   `git -C` form needs its own line). Until you do, the plugin reminds you once; it reminds again if the rule is removed.
+3. Status line (optional): `mkdir -p ~/.claude/hooks; [ -e ~/.claude/hooks/statusline.sh ] || curl -fsSL "$RAW/hooks/statusline.sh" -o ~/.claude/hooks/statusline.sh`,
+   `chmod +x` it, and set `statusLine` as in `settings.example.json`. Without it, `ctx-handoff.sh` can't see the
+   context % and stays quiet.
+
 ## What's inside
 
 **Core: any agent**
@@ -24,6 +53,9 @@ Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-
 | Path | What it does |
 |---|---|
 | `settings.example.json` | `permissions.ask` for push/PR, every hook below, the status line |
+| `.claude-plugin/`, `hooks/hooks.json` | The `dev-os` plugin: manifests and the plugin's hook wiring (a test keeps it equal to `settings.example.json`) |
+| `hooks/dedupe.sh` | Loaded by every hook: under the plugin, a hook steps aside when you already wired the kit's own copy by hand |
+| `hooks/setup-check.sh` | Plugin only, `SessionStart`: says once when the push/PR ask rules are missing (a plugin can't add them) |
 | `hooks/reminder.sh` | `UserPromptSubmit`: one-paragraph rule reminder; logs prompts that look like a correction |
 | `hooks/scope-guard.sh` | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
 | `hooks/stop-check.sh` | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
@@ -38,7 +70,7 @@ Posts: **[v1 — one rulebook, a 12-step relay](https://dev.to/dhrupo/how-i-set-
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 135 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 187 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -146,8 +178,8 @@ and 6 grew).
 
 ## Known gaps
 
-- `permissions.ask` matches the command prefix: `Bash(git push:*)` does not catch `git -C . push`. The test gate and
-  branch protection on the remote are the backstops.
+- `permissions.ask` matches command text: the kit asks for `git push`, `git -C <dir> push` and `gh pr create`, but
+  other spellings (`git -c x=y push`, `env … git push`) slip past. The test gate and branch protection are the backstops.
 - Skill pinning (`skills.lock`, overlays, a sync script) is described in the v1 post but not shipped here.
 
 ## Make it yours

@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/dedupe.sh"
 # Stop: mistakes logged this session (corrections, guard catches) newer than the last reflect block once per set.
 exec python3 -c '
 import hashlib, json, os, sys
@@ -18,7 +19,7 @@ def rows(name):
     except (OSError, ValueError):
         return []
 
-reflected = max([r.get("time", 0) for r in rows("skill-usage.jsonl") if r.get("skill") == "reflect" and r.get("sid") == sid] or [0])
+reflected = max([r.get("time", 0) for r in rows("skill-usage.jsonl") if r.get("skill") in ("reflect", "dev-os:reflect") and r.get("sid") == sid] or [0])
 pending = [m for m in rows("learn-" + sid + ".jsonl") if m.get("time", 0) >= reflected]
 marker = os.path.join(state, "learn-" + sid + ".warned")
 if not pending:

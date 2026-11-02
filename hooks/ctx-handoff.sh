@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/dedupe.sh"
 # Stop: offer a fresh session once at 80%+ context, and once when a second plan starts in the same session.
 umask 077
 INPUT=$(cat)
