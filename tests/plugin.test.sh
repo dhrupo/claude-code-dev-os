@@ -85,7 +85,7 @@ printf '{"permissions":{"ask":["Bash(git push:*)"]}}' > "$W/onlypush.json"; rm -
 assert_contains "setup-check wants all three ask rules" "$(DEV_OS_USER_SETTINGS="$W/onlypush.json" hooks/setup-check.sh </dev/null)" "README"
 assert_contains "settings.example.json asks for git -C push too" "$(jq -r '.permissions.ask | join(" ")' settings.example.json)" 'Bash(git -C * push *)'
 assert_not_contains "Known gaps no longer says git -C is uncaught" "$(sed -n '/^## Known gaps/,/^## Make/p' README.md)" 'does not catch `git -C . push`'
-for f in .claude-plugin/ hooks/hooks.json hooks/setup-check.sh hooks/dedupe.sh; do
+for f in .claude-plugin/ hooks/hooks.json hooks/setup-check.sh hooks/dedupe.sh hooks/learn.py hooks/scope-guard.py hooks/stop-check.py; do
   assert_contains "README inventory lists $f" "$(sed -n "/^## What's inside/,/^## Start here/p" README.md)" "$f"
 done
 

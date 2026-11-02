@@ -57,9 +57,9 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `hooks/dedupe.sh` | Loaded by every hook: under the plugin, a hook steps aside when you already wired the kit's own copy by hand |
 | `hooks/setup-check.sh` | Plugin only, `SessionStart`: says once when the push/PR ask rules are missing (a plugin can't add them) |
 | `hooks/reminder.sh` | `UserPromptSubmit`: one-paragraph rule reminder; logs prompts that look like a correction |
-| `hooks/scope-guard.sh` | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
-| `hooks/stop-check.sh` | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
-| `hooks/learn.sh` | `Stop`: a logged mistake blocks once until the `reflect` skill runs |
+| `hooks/scope-guard.sh` (+ `hooks/scope-guard.py`) | `PostToolUse`: warns (never blocks) when an edit lands outside the plan's `scope.txt` |
+| `hooks/stop-check.sh` (+ `hooks/stop-check.py`) | `Stop`: sends the agent back once for out-of-scope files, source with no test, or a weakened test |
+| `hooks/learn.sh` (+ `hooks/learn.py`) | `Stop`: a logged mistake blocks once until the `reflect` skill runs |
 | `hooks/ctx-handoff.sh` | `Stop`: offers a fresh session at ~80% context, or when a second plan starts |
 | `hooks/compact.sh` | `SessionStart(compact)`: restates the active plan and next task after compaction |
 | `hooks/skill-log.sh` | `PreToolUse(Skill)`: logs skill use, for `learn.sh` and `meditate` |
@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 226 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 229 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -78,7 +78,8 @@ Needs: `git`, `bash`, `python3`, `jq`.
 
 Every hook is a local shell script (some start Python 3 from `hooks/*.py`). "State" is `$DEV_OS_STATE`, default
 `~/.claude/state`. `.git/` means the repo's git folder (`git rev-parse --absolute-git-dir`; in a worktree,
-`.git/worktrees/<name>/`). Git commands are read-only: `rev-parse`, `status`, `diff`, `cat-file`.
+`.git/worktrees/<name>/`). Git commands only read your work: `rev-parse`, `status`, `diff`, `cat-file` (`git status`
+may refresh `.git/index`, as it always does).
 
 | Hook | Event | Reads | Writes | Can it stop Claude? |
 |---|---|---|---|---|
@@ -92,8 +93,7 @@ Every hook is a local shell script (some start Python 3 from `hooks/*.py`). "Sta
 | `setup-check.sh` | `SessionStart(startup)` | your `settings.json` | `state/setup-check.warned` | No; one notice |
 
 `dedupe.sh` runs inside each hook and only reads: your `settings.json` and the hook scripts it names (to see if they
-are the kit's own). No network calls. The plugin never edits your settings,
-never commits and never pushes. "Stop Claude" means a `Stop` hook sends Claude back to finish one step.
+are the kit's own). No network calls. The plugin never edits your settings, never commits and never pushes. "Stop Claude" means a `Stop` hook sends Claude back to finish one step.
 
 ## Start here
 
