@@ -18,4 +18,4 @@ Run after `build-check` is green. `/code-review` checked each slice; this reads 
 5. **Save** one report to the plan's `evidence/PRE-MERGE-REVIEW.md`: lenses run, each finding with `file:line`,
    scenario, verdict and fix. Re-running the skill updates the same file.
 
-Act-on findings go back to build (relay step 8): failing test first, then `build-check` again.
+Act-on findings go back to build (relay step 8): failing test first, then `build-check` and the tidy step (6) again.
