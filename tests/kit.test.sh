@@ -47,6 +47,8 @@ assert_contains "relay step 5 has a fallback without /code-review" "$(grep -A1 '
 assert_contains "relay step 6 names /simplify" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "/simplify"
 assert_contains "relay step 6 has a fallback without /simplify" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "other agents:"
 assert_contains "relay step 6 re-runs the tests after /simplify" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "re-run the tests"
+assert_contains "relay step 6 keeps /simplify off tests and names" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "no renames, reformats or test cuts"
+assert_contains "pre-merge-review sends fixes through the tidy step too" "$(cat skills/pre-merge-review/SKILL.md)" "tidy step (6)"
 assert_contains "fixes after review get the tidy pass too" "$(grep '^8\. ' CLAUDE.md)" "then 5 and 6"
 assert_contains "skill map row runs /simplify at the tidy step" "$(grep '^| Minimal change' CLAUDE.md)" "/simplify"
 assert_not_contains "relay step 7 leaves lens sizes to pre-merge-review" "$(sed -n '/^7\. Deep review/,/^8\. /p' CLAUDE.md)" "200+"
