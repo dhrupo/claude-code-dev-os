@@ -27,9 +27,11 @@ Also classify: bug | feature | refactor | question.
    failing test first (seen red), then the smallest fix (`ponytail`).
 5. Check the build — `build-check` (runs `/code-review` on the slice in Claude Code;
    other agents: their own review command).
-6. Tidy — delete what isn't needed (`ponytail-review`, if installed).
+6. Tidy — `ponytail-review` (if installed) deletes what isn't needed. Then a simplify pass in Claude Code:
+   `/simplify only the diff's own lines; no renames, reformats or test cuts` (other agents: skip only this pass).
+   Then re-run the tests.
 7. Deep review — `pre-merge-review`: lenses sized by the diff, one verifier per finding, one saved report.
-8. Fix findings — back to 4, then 5.
+8. Fix findings — back to 4, then 5 and 6.
 9. Step back — `step-back`: read the whole diff cold.
 10. PR — ASK before push, ASK again before opening the PR. Never commit on main/master/develop.
 11. Wait — STOP until the user says the review is in.
@@ -42,7 +44,7 @@ One task per session: a new plan gets a fresh session with a short handoff note.
 | Plan | plan | (any other planning skill) |
 | Build | (your TDD skill) | (other TDD/workflow skills) |
 | Bug | (your debugging skill) | then the TDD skill for the regression test |
-| Minimal change | ponytail (while building), ponytail-review (tidy) | other "simplify" skills |
+| Minimal change | ponytail (while building), ponytail-review (tidy) | `/simplify` after ponytail-review (step 6); other "simplify" skills |
 | Find / trace | 2-4 `scout` agents, one angle each | — |
 | Review | `pre-merge-review` (§3 step 7) | second opinions only when asked |
 | Someone else's PR | `post-pr-review` | `/code-review` as a first pass only, never `--comment` |

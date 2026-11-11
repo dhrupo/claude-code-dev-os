@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 254 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 259 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -221,7 +221,7 @@ and 6 grew).
 
 - Edit the skill map (section 4) to name the skills **you** have installed. One owner per job.
 - Rule 3 is the ladder from [ponytail](https://github.com/DietrichGebert/ponytail) (MIT); install its skills for the
-  full version (`ponytail` while building, `ponytail-review` at the tidy step).
+  full version (`ponytail` while building, `ponytail-review` at the tidy step, before `/simplify`).
 - Add project facts to section 7, or keep them in each repo's own `CLAUDE.md` / `AGENTS.md`.
 - After editing `CLAUDE.md`, run `cp CLAUDE.md AGENTS.md` so other agents get the same rules (a test checks they match).
 - When review catches something, run `reflect`: a test or hook beats a new line in `lessons.md`.
