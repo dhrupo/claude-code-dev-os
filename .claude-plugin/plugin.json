@@ -1,6 +1,6 @@
 {
   "name": "dev-os",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "Relay skills, review agents and enforcement hooks for Claude Code: test-first stop check, scope guard, learning loop, context handoff.",
   "author": { "name": "Dhrupo", "url": "https://github.com/dhrupo" },
   "homepage": "https://github.com/dhrupo/claude-code-dev-os",
