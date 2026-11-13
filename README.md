@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 291 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 299 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -202,13 +202,16 @@ build-check runs `/code-review` per slice, the old pre-merge-review sends fixes 
 step-back waits for a deep review that now runs only on serious changes. Overwrite the three skills:
 
 ```bash
+(cd ~/.claude && git add -A && git commit -m "Before 2.2.0")   # one commit to undo with git revert
 cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
 cp "$KIT/skills/pre-merge-review/SKILL.md" ~/.claude/skills/pre-merge-review/
 cp "$KIT/skills/step-back/SKILL.md" ~/.claude/skills/step-back/
 ```
 
-Then diff your `CLAUDE.md` against the new one (section 3 and the skill map changed) and re-sync any `AGENTS.md`
-copy. A plugin-only install gets this with the plugin update.
+Copied (not linked) the skills into `~/.agents/skills` for Codex? Copy the same three there too.
+
+Plugin or copy install, the rulebook is yours: the plugin update brings only the skills. Diff `~/.claude/CLAUDE.md`
+against `$RAW/CLAUDE.md` (section 3 and the skill map changed), then re-sync any `AGENTS.md` copy.
 
 ## Upgrading from v1
 
@@ -224,7 +227,7 @@ cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
 ```
 
 Merge the new `settings.example.json` blocks, and diff your `CLAUDE.md` against the new one (sections 1, 3, 4, 5
-and 6 grew).
+and 6 grew). Then do "Upgrading to 2.2.0" above.
 
 ## Known gaps
 

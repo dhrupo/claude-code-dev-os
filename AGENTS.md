@@ -37,10 +37,11 @@ Also classify: bug | feature | refactor | question.
    `evidence/review-round-<n>.md` (🟡: in chat).
    A round that found something → next round: `/code-review` on that round's diff,
    then only the tests that cover that change.
-   Round 5 findings get fixed with no 6th review. A fix the user can see → a new 5b for that part.
+   Each loop stops after its 5th round: those findings get fixed with no further review.
+   A fix the user can see → a new 5b for that part.
 7. Deep review — `pre-merge-review`, only on a serious change (payment, auth, security, data loss) or on request.
 8. Fix findings — back to 4, then 5 and the step 6 loop: its own loop on the fix's diff,
-   numbered on from the last round.
+   with its own 5-round cap; round files are numbered on from the last round.
 9. Step back — one full suite run, then `step-back`: read the whole diff cold.
 10. PR — only when the user says so. ASK before push, ASK again before opening the PR. Never commit on main/master/develop.
 11. Wait — STOP until the user says the review is in.
