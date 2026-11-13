@@ -12,10 +12,11 @@ for f in skills/reflect/SKILL.md skills/meditate/SKILL.md agents/review-lens.md 
   assert_contains "$f present" "$(test -s "$f" && echo yes)" "yes"
 done
 assert_contains "lessons.md has a line budget" "$(cat lessons.md)" "60 lines"
-LEAK=$(grep -rIlE '/Users/|/Volumes/|/home/[a-z]' --exclude-dir=.git --exclude=kit.test.sh . )
+# In a git worktree .git is a file holding an absolute path, so it needs --exclude as well as --exclude-dir.
+LEAK=$(grep -rIlE '/Users/|/Volumes/|/home/[a-z]' --exclude-dir=.git --exclude=.git --exclude=kit.test.sh . )
 assert_contains "no absolute home paths (got: $LEAK)" "[$LEAK]" "[]"
 if [ -s tests/.private-patterns ]; then
-  PRIV=$(grep -rIlf tests/.private-patterns --exclude-dir=.git --exclude=.private-patterns . )
+  PRIV=$(grep -rIlf tests/.private-patterns --exclude-dir=.git --exclude=.git --exclude=.private-patterns . )
   assert_contains "no private names (got: $PRIV)" "[$PRIV]" "[]"
 fi
 assert_contains "private pattern list is never committed" "$(cat .gitignore 2>/dev/null)" "tests/.private-patterns"
@@ -38,19 +39,63 @@ assert_contains "pre-merge-review saves its report to evidence/" "$PMR" "evidenc
 PPR=$(cat skills/post-pr-review/SKILL.md 2>/dev/null)
 assert_contains "post-pr-review asks before posting" "$PPR" "Ask the user before posting"
 assert_contains "post-pr-review never pushes to the author's branch" "$PPR" "Never push to the author's branch"
-assert_contains "build-check runs /code-review" "$(cat skills/build-check/SKILL.md)" "/code-review"
-assert_contains "relay step 5 names /code-review" "$(grep '^5\. ' CLAUDE.md)" "/code-review"
-assert_contains "relay step 7 names pre-merge-review" "$(grep '^7\. ' CLAUDE.md)" "pre-merge-review"
+RELAY=$(sed -n '/^## 3\. Relay/,/^## 4\. /p' CLAUDE.md)
+relay_step() { printf '%s\n' "$RELAY" | grep -A"${2:-0}" "^$1\. "; }
+lc() { tr '[:upper:]' '[:lower:]'; }
+assert_not_contains "build-check leaves /code-review to the step 6 loop" "$(lc < skills/build-check/SKILL.md)" "/code-review"
+assert_contains "build-check skips 5b for an unseen step 8 fix" "$(cat skills/build-check/SKILL.md)" "only if the user can see it"
+assert_contains "build-check scope check has a 🟡 fallback" "$(cat skills/build-check/SKILL.md)" "🟡: the chat plan"
+assert_contains "build-check evidence has a 🟡 fallback" "$(cat skills/build-check/SKILL.md)" "🟡: in chat"
+assert_contains "pre-merge-review fix gets its own step 6 loop" "$(cat skills/pre-merge-review/SKILL.md)" "own loop on the fix's diff"
+assert_contains "build-check sends only the last slice to the hand test" "$(cat skills/build-check/SKILL.md)" "after the last slice"
+assert_not_contains "relay step 5 has no /code-review" "$(relay_step 5 1 | lc)" "/code-review"
+assert_contains "relay step 7 names pre-merge-review" "$(relay_step 7)" "pre-merge-review"
 assert_contains "skill map routes others' PRs to post-pr-review" "$(grep '^|' CLAUDE.md)" "post-pr-review"
-assert_contains "build-check has a fallback without /code-review" "$(cat skills/build-check/SKILL.md)" "other agents:"
-assert_contains "relay step 5 has a fallback without /code-review" "$(grep -A1 '^5\. Check the build' CLAUDE.md)" "other agents:"
-assert_contains "relay step 6 names /simplify" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "/simplify"
-assert_contains "relay step 6 has a fallback without /simplify" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "other agents:"
-assert_contains "relay step 6 re-runs the tests after /simplify" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "re-run the tests"
-assert_contains "relay step 6 keeps /simplify off tests and names" "$(grep -A2 '^6\. Tidy' CLAUDE.md)" "no renames, reformats or test cuts"
-assert_contains "pre-merge-review sends fixes through the tidy step too" "$(cat skills/pre-merge-review/SKILL.md)" "tidy step (6)"
-assert_contains "fixes after review get the tidy pass too" "$(grep '^8\. ' CLAUDE.md)" "then 5 and 6"
-assert_contains "skill map row runs /simplify at the tidy step" "$(grep '^| Minimal change' CLAUDE.md)" "/simplify"
+CM=$(cat CLAUDE.md)
+S6=$(sed -n '/^6\. Review loop/,/^7\. /p' CLAUDE.md)
+assert_contains "relay step 6 chain order, ponytail-review optional" "$S6" "\`ponytail-review\` (if installed) → \`/simplify\` → \`/code-review\`"
+assert_contains "relay step 6 saves each round to evidence/" "$S6" "save each round (found, fixed, left and why)"
+assert_contains "relay step 6 🟡 log goes in chat" "$S6" "evidence/review-round-<n>.md\` (🟡: in chat)"
+assert_contains "relay step 6 has a fallback for other agents" "$S6" "other agents:"
+assert_contains "relay step 6 re-runs the tests" "$S6" "re-run the tests"
+assert_contains "relay step 6 keeps /simplify off tests and names" "$S6" "no renames, reformats or test cuts"
+assert_contains "relay step 6 later rounds test only the change" "$S6" "only the tests that cover that change"
+assert_contains "relay step 6 caps each loop at 5 rounds" "$S6" "Each loop stops after its 5th round"
+assert_contains "relay step 8 loop has its own 5-round cap" "$(relay_step 8 1)" "its own 5-round cap"
+assert_contains "pre-merge-review fix loop has its own 5-round cap" "$(cat skills/pre-merge-review/SKILL.md)" "its own 5-round cap"
+assert_contains "1b: reproduce and wait for the user" "$(relay_step 1b 2)" "STOP until the user"
+assert_contains "1b: reproduce falls back to a terminal runbook" "$(relay_step 1b 2)" "terminal runbook"
+assert_contains "5b: hand test and wait for the user" "$(relay_step 5b)" "STOP for the user's OK"
+assert_contains "5b: hand test falls back to a terminal runbook" "$(relay_step 5b)" "terminal runbook"
+assert_contains "relay step 7 runs only on serious changes or on request" "$(relay_step 7)" "only on a serious change"
+assert_contains "relay step 9 runs one full suite first" "$(relay_step 9)" "one full suite"
+assert_contains "relay step 12 names knowledge-capture" "$(relay_step 12 1 | lc)" "knowledge-capture"
+assert_contains "close and clear keeps unpushed work" "$(relay_step 12 2)" "never deletes unpushed or uncommitted work"
+assert_contains "pre-merge-review sends fixes through the step 6 loop" "$(cat skills/pre-merge-review/SKILL.md)" "review loop (step 6)"
+assert_contains "fixes after review go through the step 6 loop" "$(relay_step 8)" "then 5 and the step 6 loop"
+assert_contains "skill map row runs /simplify in step 6" "$(grep '^| Minimal change' CLAUDE.md)" "/simplify"
+assert_not_contains "skill map has no tidy step left" "$(grep '^|' CLAUDE.md | lc)" "tidy"
+assert_contains "skill map Review row names /code-review" "$(grep '^| Review' CLAUDE.md)" "/code-review"
+assert_not_contains "relay step 5 claims no test-quality check" "$(relay_step 5 1 | lc)" "test quality"
+assert_contains "relay step 5 names E2E and evidence" "$(relay_step 5)" "E2E, lint, scope, evidence"
+assert_contains "relay step 8 fix gets its own loop" "$(relay_step 8)" "own loop on the fix's diff"
+assert_contains "relay step 8 loop never overwrites round files" "$(relay_step 8 1)" "numbered on from the last round"
+assert_not_contains "relay step 8 numbering works without round files (🟡)" "$(relay_step 8 1)" "last round file"
+assert_contains "pre-merge-review fix loop numbers on" "$(cat skills/pre-merge-review/SKILL.md)" "numbered on from the last round"
+assert_contains "relay step 6 saves the round after the test re-run" "$S6" "re-run the tests, then save each round"
+assert_contains "🟡 chat plan stands in for steps 2-3" "$(grep '^## 3\. Relay' CLAUDE.md)" "steps 2-3"
+U22=$(sed -n '/^## Upgrading to 2.2.0/,/^## /p' README.md)
+assert_contains "2.2.0 upgrade re-syncs AGENTS.md" "$U22" "AGENTS.md"
+assert_contains "2.2.0 upgrade sends plugin users to the rulebook diff too" "$U22" "Plugin or copy install"
+assert_not_contains "2.2.0 upgrade does not claim the plugin brings the rulebook" "$U22" "plugin-only install gets this"
+assert_contains "2.2.0 upgrade commits a backup first" "$U22" 'git commit -m "Before 2.2.0"'
+assert_contains "2.2.0 upgrade covers copied Codex skills" "$U22" "~/.agents/skills"
+assert_contains "v1 upgrade points on to 2.2.0" "$(sed -n '/^## Upgrading from v1/,/^## /p' README.md)" "Then do \"Upgrading to 2.2.0\""
+assert_not_contains "2.2.0 upgrade copies no hooks (2.2.0 changes none)" "$U22" "/hooks/"
+assert_contains "2.2.0 upgrade says why pre-merge-review and step-back change" "$U22" "old tidy step"
+for f in build-check pre-merge-review step-back; do
+  assert_contains "2.2.0 upgrade replaces $f" "$U22" "cp \"\$KIT/skills/$f/SKILL.md\""
+done
 assert_not_contains "relay step 7 leaves lens sizes to pre-merge-review" "$(sed -n '/^7\. Deep review/,/^8\. /p' CLAUDE.md)" "200+"
 assert_contains "pre-merge-review defines its security lens" "$(cat skills/pre-merge-review/SKILL.md)" "who can reach"
 assert_contains "post-pr-review row defers /code-review --comment" "$(grep "^| Someone else's PR" CLAUDE.md)" "never \`--comment\`"

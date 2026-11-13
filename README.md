@@ -70,7 +70,7 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 261 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 299 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -195,11 +195,29 @@ cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/
 A plugin-only install gets this with the plugin update. If you also wired copied hooks by hand, run the command above:
 the plugin steps aside for them.
 
+## Upgrading to 2.2.0
+
+2.2.0 moves code review out of `build-check` into the step 6 review loop. `cp -n` keeps your old copies: the old
+build-check runs `/code-review` per slice, the old pre-merge-review sends fixes to the old tidy step, and the old
+step-back waits for a deep review that now runs only on serious changes. Overwrite the three skills:
+
+```bash
+(cd ~/.claude && git add -A && git commit -m "Before 2.2.0")   # one commit to undo with git revert
+cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
+cp "$KIT/skills/pre-merge-review/SKILL.md" ~/.claude/skills/pre-merge-review/
+cp "$KIT/skills/step-back/SKILL.md" ~/.claude/skills/step-back/
+```
+
+Copied (not linked) the skills into `~/.agents/skills` for Codex? Copy the same three there too.
+
+Plugin or copy install, the rulebook is yours: the plugin update brings only the skills. Diff `~/.claude/CLAUDE.md`
+against `$RAW/CLAUDE.md` (section 3 and the skill map changed), then re-sync any `AGENTS.md` copy.
+
 ## Upgrading from v1
 
 Nothing was renamed. Do steps 2-4 above (with `-n` they only add what is missing), then replace the two v1 hooks
 and three v1 skills that changed, since `cp -n` keeps your old copies (the learning loop needs the new hooks; the
-plan skill now copies its template, plan-check gained check 5, and build-check runs `/code-review`):
+plan skill now copies its template, plan-check gained check 5, and build-check leaves `/code-review` to the step 6 review loop):
 
 ```bash
 (cd ~/.claude && git add -A && git commit -m "Before v2")   # one commit to undo with git revert
@@ -209,7 +227,7 @@ cp "$KIT/skills/build-check/SKILL.md" ~/.claude/skills/build-check/
 ```
 
 Merge the new `settings.example.json` blocks, and diff your `CLAUDE.md` against the new one (sections 1, 3, 4, 5
-and 6 grew).
+and 6 grew). Then do "Upgrading to 2.2.0" above.
 
 ## Known gaps
 
@@ -221,7 +239,7 @@ and 6 grew).
 
 - Edit the skill map (section 4) to name the skills **you** have installed. One owner per job.
 - Rule 3 is the ladder from [ponytail](https://github.com/DietrichGebert/ponytail) (MIT); install its skills for the
-  full version (`ponytail` while building, `ponytail-review` at the tidy step, before `/simplify`).
+  full version (`ponytail` while building, `ponytail-review` in the step 6 review loop, before `/simplify`).
 - Add project facts to section 7, or keep them in each repo's own `CLAUDE.md` / `AGENTS.md`.
 - After editing `CLAUDE.md`, run `cp CLAUDE.md AGENTS.md` so other agents get the same rules (a test checks they match).
 - When review catches something, run `reflect`: a test or hook beats a new line in `lessons.md`.

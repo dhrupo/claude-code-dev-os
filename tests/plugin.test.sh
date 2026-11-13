@@ -12,7 +12,7 @@ assert_contains "marketplace has an owner" "$(jq -r '.owner.name // empty' "$M" 
 PV=$(jq -r .version "$P" 2>/dev/null); MV=$(jq -r '.plugins[] | select(.name=="dev-os") | .version' "$M" 2>/dev/null)
 assert_contains "plugin has a semver version (got $PV)" "$(printf '%s' "$PV" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" "$PV"
 assert_contains "plugin.json alone owns the version (marketplace has none)" "[$MV]" "[null]"
-assert_contains "plugin version is 2.1.2" "$PV" "2.1.2"
+assert_contains "plugin version is 2.2.0" "$PV" "2.2.0"
 assert_contains "listing links to support (GitHub issues)" "[$(jq -r '.supportUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os/issues]"
 assert_contains "listing links to documentation (README)" "[$(jq -r '.documentationUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#readme]"
 assert_contains "listing links to the privacy section" "[$(jq -r '.privacyPolicyUrl // empty' "$P" 2>/dev/null)]" "[https://github.com/dhrupo/claude-code-dev-os#privacy]"

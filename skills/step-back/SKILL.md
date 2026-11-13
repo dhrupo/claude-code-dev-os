@@ -1,6 +1,6 @@
 ---
 name: step-back
-description: Use after the deep review and fixes, before opening a PR. Re-read the whole diff cold, as if a stranger wrote it, then give a plain-words summary.
+description: Use after the step 6 review loop (and the deep review, when it runs), before opening a PR. Re-read the whole diff cold, as if a stranger wrote it, then give a plain-words summary.
 ---
 
 # Step Back

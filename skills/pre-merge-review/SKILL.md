@@ -5,7 +5,7 @@ description: Deep review of YOUR branch before the PR (relay step 7) — review-
 
 # Pre-merge Review
 
-Run after `build-check` is green. `/code-review` checked each slice; this reads the whole branch.
+Run at relay step 7, after the step 6 review loop; this reads the whole branch.
 
 1. **Size the diff.** `git diff --stat <base>...HEAD`. Count changed lines, tests excluded.
 2. **Spawn lenses in one message** (`review-lens` agent, read-only): Skeptic always; + Architect at 50+ lines;
@@ -18,4 +18,4 @@ Run after `build-check` is green. `/code-review` checked each slice; this reads 
 5. **Save** one report to the plan's `evidence/PRE-MERGE-REVIEW.md`: lenses run, each finding with `file:line`,
    scenario, verdict and fix. Re-running the skill updates the same file.
 
-Act-on findings go back to build (relay step 8): failing test first, then `build-check` and the tidy step (6) again.
+Act-on findings go back to build (relay step 8): failing test first, then `build-check` and the review loop (step 6): its own loop on the fix's diff, with its own 5-round cap; round files are numbered on from the last round.
