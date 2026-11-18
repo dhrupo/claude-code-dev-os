@@ -66,11 +66,12 @@ hook stays quiet, so nothing runs twice. To move from the copied hooks to the pl
 | `hooks/statusline.sh` | Status line: model + context %; saves the % for `ctx-handoff.sh` |
 | `skills/plan` (+ `template/`), `plan-check`, `build-check`, `step-back` | The relay's gates; the plan template is proposal, tasks, scope.txt, evidence/ |
 | `skills/pre-merge-review`, `post-pr-review` | Deep review of your branch (lenses + a verifier per finding); review of someone else's PR, each finding proven by running it |
+| `skills/explain-this` (+ `assets/lesson-template.html`) | Teaches code or a change as one HTML lesson (light/dark, Mermaid, quiz); own-it mode is the step 10 teach gate |
 | `skills/reflect` | Turns a mistake into a check, a skill edit or a lesson |
 | `skills/meditate` | Audits rules and lessons for stale, duplicate and contradicting lines |
 | `agents/scout.md` | Read-only finder for one angle (spawn 2-4 at once) |
 | `agents/review-lens.md` | Read-only reviewer for one lens (Skeptic, Architect, Minimalist) or one finding's verifier |
-| `tests/` | 299 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
+| `tests/` | 319 checks for every hook, the gate and the kit shape (`bash tests/run.sh`) |
 
 Needs: `git`, `bash`, `python3`, `jq`.
 
@@ -194,6 +195,20 @@ cp "$KIT"/hooks/{learn,scope-guard,stop-check}.{sh,py} ~/.claude/hooks/
 
 A plugin-only install gets this with the plugin update. If you also wired copied hooks by hand, run the command above:
 the plugin steps aside for them.
+
+## Upgrading to 2.3.0
+
+2.3.0 adds the `explain-this` skill and a teach gate at step 10: before a PR, the agent writes an HTML lesson on
+the branch diff and asks "Do you understand it?". A new skill, so a copy install adds it:
+
+```bash
+cp -Rn "$KIT/skills/explain-this" ~/.claude/skills/   # -n keeps an explain-this you already have
+cp -Rn "$KIT/skills/explain-this" ~/.agents/skills/ 2>/dev/null   # Codex copy install, if you have one
+grep -q "Own-it mode" ~/.claude/skills/explain-this/SKILL.md && grep -q "assets/lesson-template.html" ~/.claude/skills/explain-this/SKILL.md || echo "old explain-this: back up the folder, then cp -R the kit folder over it"
+```
+
+Plugin or copy install, the rulebook is yours: diff `~/.claude/CLAUDE.md` against `$RAW/CLAUDE.md` (step 10 and
+the skill map changed), then re-sync any `AGENTS.md` copy.
 
 ## Upgrading to 2.2.0
 

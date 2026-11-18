@@ -43,7 +43,9 @@ Also classify: bug | feature | refactor | question.
 8. Fix findings — back to 4, then 5 and the step 6 loop: its own loop on the fix's diff,
    with its own 5-round cap; round files are numbered on from the last round.
 9. Step back — one full suite run, then `step-back`: read the whole diff cold.
-10. PR — only when the user says so. ASK before push, ASK again before opening the PR. Never commit on main/master/develop.
+10. PR — only when the user says so. Teach gate first: `explain-this` own-it mode on the branch diff writes an HTML
+    lesson, then ask "Do you understand it?" (yes / explain a part again / let me explain it back / skip).
+    ASK before push, ASK again before opening the PR. Never commit on main/master/develop.
 11. Wait — STOP until the user says the review is in.
 12. Handle review — verify every finding against the code before acting; challenge wrong ones with evidence.
     After merge: `knowledge-capture` (if installed). On "close and clear": remove what the task created (dev
@@ -61,6 +63,7 @@ One task per session: a new plan gets a fresh session with a short handoff note.
 | Review | `/code-review` (step 6 loop); `pre-merge-review` (step 7) | second opinions only when asked |
 | Someone else's PR | `post-pr-review` | `/code-review` as a first pass only, never `--comment` |
 | Learn | `reflect` (automatic after a mistake or a review) | `meditate` only when asked |
+| Explain code or a change | `explain-this` (HTML lesson; own-it mode at step 10) | other teach/explain skills |
 Add a row whenever two installed skills could both claim a job.
 Installed as the `dev-os` plugin? The same skills and agents are named `dev-os:<name>` (e.g. `dev-os:plan-check`).
 
