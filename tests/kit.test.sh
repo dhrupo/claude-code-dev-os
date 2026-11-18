@@ -20,6 +20,20 @@ if [ -s tests/.private-patterns ]; then
   assert_contains "no private names (got: $PRIV)" "[$PRIV]" "[]"
 fi
 assert_contains "private pattern list is never committed" "$(cat .gitignore 2>/dev/null)" "tests/.private-patterns"
+ET=$(cat skills/explain-this/SKILL.md 2>/dev/null)
+assert_contains "explain-this ships its lesson template" "$(test -s skills/explain-this/assets/lesson-template.html && echo yes)" "yes"
+assert_contains "explain-this copies its lesson template" "$ET" "assets/lesson-template.html"
+assert_contains "explain-this has own-it mode" "$ET" "Own-it mode"
+assert_contains "step 10 runs the teach gate" "$(sed -n '/^10\. PR/,/^11\./p' CLAUDE.md)" "explain-this\` own-it mode"
+assert_contains "step 10 asks before the push" "$(sed -n '/^10\. PR/,/^11\./p' CLAUDE.md)" "Do you understand it?"
+assert_contains "README lists the explain-this skill" "$(grep '^| `skills/explain-this`' README.md)" "teach gate"
+LT=$(cat skills/explain-this/assets/lesson-template.html 2>/dev/null)
+for id in problem flow why-not changes example decisions proof words quiz; do
+  assert_contains "lesson template has #$id" "$LT" "id=\"$id\""
+done
+assert_contains "explain-this shapes an area lesson" "$ET" "Area lesson (no diff)"
+assert_contains "explain-this ties explain-back to the step 10 answer" "$ET" "let me explain it"
+assert_contains "explain-this runs in the main session (explain-back needs chat)" "[$(grep -c '^context: fork' skills/explain-this/SKILL.md)]" "[0]"
 assert_contains "plan skill ships its template" "$(test -s skills/plan/template/proposal.md && echo yes)" "yes"
 assert_contains "plan skill copies its template" "$(cat skills/plan/SKILL.md)" "template/"
 assert_contains "upgrade replaces the v1 plan skill" "$(cat README.md)" 'cp "$KIT/skills/plan/SKILL.md" ~/.claude/skills/plan/'
@@ -84,6 +98,9 @@ assert_not_contains "relay step 8 numbering works without round files (🟡)" "$
 assert_contains "pre-merge-review fix loop numbers on" "$(cat skills/pre-merge-review/SKILL.md)" "numbered on from the last round"
 assert_contains "relay step 6 saves the round after the test re-run" "$S6" "re-run the tests, then save each round"
 assert_contains "🟡 chat plan stands in for steps 2-3" "$(grep '^## 3\. Relay' CLAUDE.md)" "steps 2-3"
+U23=$(sed -n '/^## Upgrading to 2.3.0/,/^## /p' README.md)
+assert_contains "2.3.0 upgrade copies explain-this without overwriting" "$U23" 'cp -Rn "$KIT/skills/explain-this" ~/.claude/skills/'
+assert_contains "2.3.0 upgrade sends everyone to the rulebook diff" "$U23" "Plugin or copy install"
 U22=$(sed -n '/^## Upgrading to 2.2.0/,/^## /p' README.md)
 assert_contains "2.2.0 upgrade re-syncs AGENTS.md" "$U22" "AGENTS.md"
 assert_contains "2.2.0 upgrade sends plugin users to the rulebook diff too" "$U22" "Plugin or copy install"
